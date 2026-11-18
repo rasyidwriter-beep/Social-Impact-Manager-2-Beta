@@ -34,6 +34,10 @@
       width: 100%;
       height: 100%;
       background: #4d7c4f;
+      image-rendering: auto;
+      transform: translateZ(0);
+      will-change: transform;
+      backface-visibility: hidden;
     }
     /* Custom scrollbar for modals */
     .custom-scroll::-webkit-scrollbar {
@@ -1129,10 +1133,14 @@
       ctx.translate(x, y);
 
       // Ground soft shadow
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.24)';
+      ctx.save();
+      ctx.shadowColor = 'rgba(15, 23, 42, 0.22)';
+      ctx.shadowBlur = 7;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.20)';
       ctx.beginPath();
-      ctx.ellipse(0, 20, 13, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 20, 13, 5.5, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
 
       // Player indicator ring
       if (isPlayer) {
@@ -2457,9 +2465,17 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
+    let viewWidth = window.innerWidth;
+    let viewHeight = window.innerHeight;
+    let renderScale = Math.min(window.devicePixelRatio || 1, 2);
     function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      viewWidth = window.innerWidth;
+      viewHeight = window.innerHeight;
+      renderScale = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(viewWidth * renderScale);
+      canvas.height = Math.round(viewHeight * renderScale);
+      ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+      ctx.imageSmoothingEnabled = true;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
@@ -2839,14 +2855,30 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       }
     }
 
-    function render() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let cameraX = 0;
+    let cameraY = 0;
+    let cameraReady = false;
 
-      // Smooth Camera Centering on Player clamped to World Bounds
-      let camX = state.player.x - canvas.width / 2;
-      let camY = state.player.y - canvas.height / 2;
-      camX = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, camX));
-      camY = Math.max(0, Math.min(WORLD_HEIGHT - canvas.height, camY));
+    function render(dt = 1 / 60) {
+      // Clear in physical pixels, then draw in CSS pixels for crisp high-DPI rendering.
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+
+      // Ease the camera toward the player instead of snapping every frame.
+      let targetX = Math.max(0, Math.min(WORLD_WIDTH - viewWidth, state.player.x - viewWidth / 2));
+      let targetY = Math.max(0, Math.min(WORLD_HEIGHT - viewHeight, state.player.y - viewHeight / 2));
+      if (!cameraReady) {
+        cameraX = targetX;
+        cameraY = targetY;
+        cameraReady = true;
+      }
+      const cameraEase = 1 - Math.exp(-9 * Math.min(dt, 0.05));
+      cameraX += (targetX - cameraX) * cameraEase;
+      cameraY += (targetY - cameraY) * cameraEase;
+      const camX = cameraX;
+      const camY = cameraY;
 
       ctx.save();
       ctx.translate(-camX, -camY);
@@ -2954,7 +2986,7 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       lastTimestamp = timestamp;
 
       update(dt);
-      render();
+      render(dt);
       requestAnimationFrame(gameLoop);
     }
 
