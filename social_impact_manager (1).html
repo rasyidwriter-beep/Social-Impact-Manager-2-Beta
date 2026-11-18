@@ -1,0 +1,2769 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>SOCIAL IMPACT MANAGER — Simulasi Manajemen Lembaga Sosial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --emerald-deep: #064e3b;
+      --emerald-main: #0f766e;
+      --emerald-bright: #10b981;
+      --gold-accent: #d97706;
+      --earth-bg: #f8fafc;
+    }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #064e3b;
+    }
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #4d7c4f;
+    }
+    /* Custom scrollbar for modals */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    /* Animations */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .animate-float {
+      animation: floatSlow 3s ease-in-out infinite;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      70% { transform: scale(1.08); opacity: 0.2; }
+      100% { transform: scale(0.95); opacity: 0; }
+    }
+    .pulse-ring {
+      animation: pulseRing 2s infinite;
+    }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+    .glass-dark {
+      background: rgba(6, 78, 59, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    /* Virtual D-Pad styling */
+    .dpad-btn {
+      background: rgba(255, 255, 255, 0.85);
+      border: 2px solid rgba(15, 118, 110, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: transform 0.08s, background-color 0.08s;
+    }
+    .dpad-btn:active, .dpad-btn.active {
+      background: #10b981;
+      color: white;
+      transform: scale(0.92);
+    }
+  </style>
+</head>
+<body class="relative w-screen h-screen overflow-hidden text-slate-800">
+
+  <!-- ===================================================================== -->
+  <!-- 1. TITLE SCREEN & CHARACTER SELECTION                                 -->
+  <!-- ===================================================================== -->
+  <div id="titleScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-emerald-950 via-teal-900 to-emerald-800 p-4 overflow-y-auto">
+    <!-- Decorative subtle pattern -->
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#fbbf24 1px, transparent 1px); background-size: 28px 28px;"></div>
+
+    <div class="relative w-full max-w-4xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-emerald-200/60 overflow-hidden my-auto">
+      <!-- Top Emerald Banner -->
+      <div class="bg-gradient-to-r from-emerald-900 via-teal-800 to-emerald-800 px-6 py-6 sm:px-10 sm:py-8 text-white relative overflow-hidden">
+        <div class="absolute right-4 top-4 opacity-15">
+          <svg class="w-32 h-32" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M50 5 L61 35 L95 35 L67 55 L78 88 L50 68 L22 88 L33 55 L5 35 L39 35 Z"/>
+          </svg>
+        </div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs font-semibold tracking-wider uppercase mb-3">
+          <span>Islamic Social Finance Simulation RPG</span>
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+          SOCIAL IMPACT <span class="text-amber-400">MANAGER</span>
+        </h1>
+        <p class="mt-2 text-emerald-100 text-sm sm:text-base max-w-2xl leading-relaxed">
+          Kelola dana ZISWAF & filantropi secara amanah, identifikasi kebutuhan masyarakat desa, tanggulangi krisis, dan bangun kemandirian umat dengan dampak sosial berkelanjutan.
+        </p>
+      </div>
+
+      <!-- Main Body -->
+      <div class="p-6 sm:p-8 space-y-6">
+        <!-- Character Selection -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm sm:text-base font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              Pilih Karakter Pengelola Lembaga
+            </h2>
+            <span class="text-xs text-slate-500">2D Top-Down Human Proportion</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Male Character Option -->
+            <div id="selectMale" onclick="selectCharacter('male')" class="cursor-pointer group relative rounded-2xl border-2 border-emerald-600 bg-emerald-50/70 p-4 flex items-center gap-4 transition-all hover:shadow-md">
+              <div class="w-20 h-24 rounded-xl bg-white border border-emerald-200 flex items-center justify-center shrink-0 shadow-inner">
+                <canvas id="previewMaleCanvas" width="64" height="80"></canvas>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">Amil / Manajer</span>
+                  <span id="badgeMale" class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">✓</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mt-1">Rizky Pratama</h3>
+                <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">Manajer Program Lapangan. Tangkas dalam koordinasi distribusi bantuan & mitigasi bencana.</p>
+              </div>
+            </div>
+
+            <!-- Female Character Option -->
+            <div id="selectFemale" onclick="selectCharacter('female')" class="cursor-pointer group relative rounded-2xl border-2 border-slate-200 bg-white p-4 flex items-center gap-4 transition-all hover:border-emerald-400 hover:shadow-md">
+              <div class="w-20 h-24 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 shadow-inner">
+                <canvas id="previewFemaleCanvas" width="64" height="80"></canvas>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-100 px-2.5 py-0.5 rounded-full">Amilah / Manajer</span>
+                  <span id="badgeFemale" class="w-5 h-5 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center text-xs font-bold">✓</span>
+                </div>
+                <h3 class="text-lg font-bold text-slate-900 mt-1">Aisyah Rahma</h3>
+                <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">Analis Dampak & Pemberdayaan. Cermat dalam alokasi dana produktif & tata kelola ZISWAF.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Institution Name & Briefing -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+          <div class="md:col-span-2">
+            <label for="institutionNameInput" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Lembaga Filantropi / Sosial Anda</label>
+            <input id="institutionNameInput" type="text" value="Maslahat Nusantara Foundation" maxlength="32"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600" />
+            <p class="text-[11px] text-slate-500 mt-1.5">Modal Awal: <strong class="text-emerald-700">Rp 12.000.000</strong> • Target: Bangun ketahanan & dampak sosial Desa Sejahtera.</p>
+          </div>
+          <div class="flex flex-col justify-center bg-amber-50 border border-amber-200/80 rounded-xl p-3">
+            <div class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
+              <span>💡</span> Prinsip Utama
+            </div>
+            <p class="text-[11px] text-amber-900/80 mt-1 leading-snug">
+              Anggaran terbatas! Pertimbangkan <em>opportunity cost</em> antara bantuan darurat cepat dan pemberdayaan ekonomi produktif.
+            </p>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 pt-1">
+          <button onclick="startNewGame()" class="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-700 to-teal-600 hover:from-emerald-800 hover:to-teal-700 text-white font-bold text-sm sm:text-base shadow-lg shadow-emerald-900/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+            <span>Mulai Misi Baru</span>
+            <span>→</span>
+          </button>
+
+          <button id="btnContinueGame" onclick="continueSavedGame()" class="hidden w-full sm:w-auto py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm sm:text-base shadow-lg shadow-amber-900/20 transition transform active:scale-[0.99] flex items-center justify-center gap-2">
+            <span>Lanjutkan Progres</span>
+          </button>
+
+          <button onclick="openModal('guideModal')" class="w-full sm:w-auto py-3.5 px-5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition flex items-center justify-center gap-2">
+            <span>📘 Panduan & GitHub</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 2. MAIN GAME CANVAS                                                   -->
+  <!-- ===================================================================== -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- ===================================================================== -->
+  <!-- 3. TOP HUD (MINIMALIST RPG OVERLAY)                                   -->
+  <!-- ===================================================================== -->
+  <div id="gameHUD" class="hidden fixed top-0 left-0 right-0 z-20 p-2.5 sm:p-4 pointer-events-none">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-start justify-between gap-2">
+      
+      <!-- Left: Institution & Financial Pill Bar -->
+      <div class="pointer-events-auto glass-panel rounded-2xl shadow-lg px-3 py-2 sm:px-4 sm:py-2.5 flex flex-wrap items-center gap-3 sm:gap-5">
+        <!-- Period / Day Badge -->
+        <div class="flex items-center gap-2 pr-2 sm:pr-3 border-r border-slate-200">
+          <div class="w-9 h-9 rounded-xl bg-emerald-800 text-amber-300 flex flex-col items-center justify-center font-extrabold leading-none shadow-sm">
+            <span class="text-[9px] uppercase text-emerald-200">Hari</span>
+            <span id="hudDay" class="text-sm">1</span>
+          </div>
+          <div class="hidden md:block">
+            <div id="hudInstName" class="text-xs font-extrabold text-slate-800 truncate max-w-[140px]">Maslahat Nusantara</div>
+            <div id="hudWeather" class="text-[11px] font-medium text-emerald-700">☀️ Cerah • Stabil</div>
+          </div>
+        </div>
+
+        <!-- Dana Lembaga -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">Rp</div>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Dana Lembaga</div>
+            <div id="hudFunds" class="text-xs sm:text-sm font-extrabold text-emerald-800">Rp 12.000.000</div>
+          </div>
+        </div>
+
+        <!-- Reputasi -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm">★</div>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Reputasi</div>
+            <div class="flex items-center gap-1.5">
+              <span id="hudReputation" class="text-xs sm:text-sm font-extrabold text-slate-800">65%</span>
+              <div class="hidden sm:block w-12 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                <div id="hudRepBar" class="h-full bg-amber-500 rounded-full transition-all" style="width: 65%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dampak Sosial -->
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">♥</div>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Dampak</div>
+            <div id="hudImpact" class="text-xs sm:text-sm font-extrabold text-teal-800">0 Poin</div>
+          </div>
+        </div>
+
+        <!-- Masyarakat Terbantu (Desktop) -->
+        <div class="hidden lg:flex items-center gap-2 pl-2 border-l border-slate-200">
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Terbantu</div>
+            <div id="hudBeneficiaries" class="text-xs sm:text-sm font-extrabold text-slate-800">0 Jiwa</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Quick Action Menu Buttons -->
+      <div class="pointer-events-auto flex items-center gap-1.5 sm:gap-2">
+        <button onclick="openDashboardModal('overview')" class="glass-panel hover:bg-emerald-50 text-slate-800 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md font-bold text-xs flex items-center gap-1.5 transition active:scale-95">
+          <span class="text-emerald-700 text-sm">📊</span>
+          <span>Lembaga</span>
+          <span id="badgeActivePrograms" class="ml-0.5 px-1.5 py-0.2 bg-emerald-700 text-white rounded-full text-[10px]">0</span>
+        </button>
+
+        <button onclick="openDashboardModal('quests')" class="glass-panel hover:bg-amber-50 text-slate-800 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md font-bold text-xs flex items-center gap-1.5 transition active:scale-95 relative">
+          <span class="text-amber-600 text-sm">📋</span>
+          <span>Misi</span>
+          <span id="badgeAvailableQuests" class="px-1.5 py-0.2 bg-amber-500 text-white rounded-full text-[10px]">3</span>
+        </button>
+
+        <button onclick="advancePeriodPrompt()" class="bg-emerald-800 hover:bg-emerald-900 text-white px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md font-bold text-xs flex items-center gap-1.5 transition active:scale-95 border border-emerald-600">
+          <span>⏭️</span>
+          <span class="hidden sm:inline">Lanjut Hari</span>
+        </button>
+
+        <button onclick="openModal('menuModal')" class="glass-panel hover:bg-slate-100 text-slate-700 p-2 sm:p-2.5 rounded-xl shadow-md font-bold text-xs transition active:scale-95" title="Pengaturan & Simpan">
+          ⚙️
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Crisis Banner (Shows when crisis is active) -->
+    <div id="crisisBanner" class="hidden max-w-xl mx-auto mt-2.5 pointer-events-auto">
+      <div onclick="openDashboardModal('quests')" class="cursor-pointer bg-red-600/95 backdrop-blur-md text-white px-4 py-2 rounded-2xl shadow-lg border border-red-400 flex items-center justify-between gap-3 animate-pulse">
+        <div class="flex items-center gap-2 text-xs sm:text-sm font-bold">
+          <span>🚨</span>
+          <span id="crisisBannerText">DARURAT: Krisis melanda desa! Segera tangani!</span>
+        </div>
+        <span class="text-[11px] bg-white/20 px-2 py-0.5 rounded-lg font-semibold shrink-0">Lihat →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 4. FLOATING INTERACTION PROMPT & TOAST NOTIFICATIONS                  -->
+  <!-- ===================================================================== -->
+  <div id="interactionPrompt" class="hidden fixed bottom-24 sm:bottom-10 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+    <div class="glass-dark text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2.5 border border-emerald-400/50 animate-float">
+      <span class="px-2 py-0.5 rounded-lg bg-amber-400 text-emerald-950 font-extrabold text-xs">E</span>
+      <span id="interactionPromptText" class="text-xs sm:text-sm font-semibold">Berbicara dengan Bu Sari</span>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-xs sm:max-w-sm"></div>
+
+  <!-- ===================================================================== -->
+  <!-- 5. MOBILE / TOUCH VIRTUAL CONTROLS                                    -->
+  <!-- ===================================================================== -->
+  <div id="mobileControls" class="hidden fixed bottom-4 left-4 right-4 z-20 flex items-end justify-between pointer-events-none md:opacity-75 hover:opacity-100 transition-opacity">
+    <!-- Virtual D-Pad -->
+    <div class="pointer-events-auto relative w-32 h-32 sm:w-36 sm:h-36">
+      <button id="dpadUp" class="dpad-btn absolute top-0 left-1/2 -translate-x-1/2 w-11 h-11 rounded-xl flex items-center justify-center font-bold text-slate-700 text-lg">▲</button>
+      <button id="dpadDown" class="dpad-btn absolute bottom-0 left-1/2 -translate-x-1/2 w-11 h-11 rounded-xl flex items-center justify-center font-bold text-slate-700 text-lg">▼</button>
+      <button id="dpadLeft" class="dpad-btn absolute left-0 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl flex items-center justify-center font-bold text-slate-700 text-lg">◀</button>
+      <button id="dpadRight" class="dpad-btn absolute right-0 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl flex items-center justify-center font-bold text-slate-700 text-lg">▶</button>
+      <div class="absolute inset-0 m-auto w-8 h-8 rounded-full bg-white/40 pointer-events-none"></div>
+    </div>
+
+    <!-- Action / Interact Button -->
+    <div class="pointer-events-auto flex flex-col items-end gap-2">
+      <button id="btnMobileInteract" onclick="triggerInteraction()" class="w-16 h-16 sm:w-18 sm:h-18 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-emerald-950 font-extrabold text-xs sm:text-sm shadow-xl border-4 border-white/80 flex flex-col items-center justify-center active:scale-90 transition">
+        <span class="text-lg leading-none">💬</span>
+        <span class="mt-0.5">AKSI</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 6. RPG DIALOGUE & DECISION MODAL                                      -->
+  <!-- ===================================================================== -->
+  <div id="dialogueModal" class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 sm:p-6">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-emerald-100 overflow-hidden transform transition-all">
+      <!-- NPC / Building Header -->
+      <div class="bg-gradient-to-r from-emerald-900 to-teal-800 px-5 py-4 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="dlgAvatar" class="w-12 h-12 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-2xl shadow-inner">
+            👩
+          </div>
+          <div>
+            <div id="dlgRole" class="text-[11px] font-bold uppercase tracking-wider text-amber-300">Warga Pemukiman</div>
+            <h3 id="dlgName" class="text-lg font-extrabold leading-tight">Bu Sari</h3>
+          </div>
+        </div>
+        <button onclick="closeModal('dialogueModal')" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold">✕</button>
+      </div>
+
+      <!-- Dialogue Content -->
+      <div class="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scroll">
+        <div id="dlgText" class="text-slate-700 text-sm sm:text-base leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+          "Assalamu'alaikum Pak/Bu Manajer. Sumur warga di pemukiman kami kering dan tercemar..."
+        </div>
+
+        <!-- Quest / Action Card Inside Dialogue (if available) -->
+        <div id="dlgQuestBox" class="hidden space-y-3"></div>
+
+        <!-- Dialogue Choices / Buttons -->
+        <div id="dlgActions" class="flex flex-col sm:flex-row flex-wrap gap-2.5 pt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 7. INSTITUTIONAL MANAGEMENT DASHBOARD MODAL                           -->
+  <!-- ===================================================================== -->
+  <div id="dashboardModal" class="hidden fixed inset-0 z-40 bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+      <!-- Header -->
+      <div class="bg-emerald-900 px-6 py-4 text-white flex items-center justify-between shrink-0">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-widest text-amber-300">Sistem Tata Kelola Filantropi & ZISWAF</span>
+          <h2 id="dashTitle" class="text-lg sm:text-xl font-extrabold">Dashboard Manajemen Dampak Sosial</h2>
+        </div>
+        <button onclick="closeModal('dashboardModal')" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold">✕</button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-slate-200 bg-slate-50 px-4 pt-2 gap-2 overflow-x-auto shrink-0">
+        <button id="tabOverview" onclick="switchDashTab('overview')" class="px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-b-2 border-emerald-700 text-emerald-800 bg-white">
+          📊 Ringkasan & Keuangan
+        </button>
+        <button id="tabQuests" onclick="switchDashTab('quests')" class="px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+          📋 Daftar Misi & Krisis
+        </button>
+        <button id="tabPrograms" onclick="switchDashTab('programs')" class="px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+          ⚙️ Program & Evaluasi
+        </button>
+        <button id="tabFundraising" onclick="switchDashTab('fundraising')" class="px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900">
+          🕌 Penghimpunan ZISWAF
+        </button>
+      </div>
+
+      <!-- Tab Content Area -->
+      <div id="dashContent" class="p-5 sm:p-6 overflow-y-auto custom-scroll flex-1 space-y-5 bg-white">
+        <!-- Populated dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 8. PERIOD REPORT / EVALUATION MODAL                                   -->
+  <!-- ===================================================================== -->
+  <div id="reportModal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-emerald-200 overflow-hidden">
+      <div class="bg-gradient-to-r from-emerald-800 to-teal-700 px-6 py-5 text-white">
+        <div class="text-xs font-bold uppercase tracking-wider text-amber-300">Laporan Evaluasi Periode</div>
+        <h3 id="reportTitle" class="text-xl font-extrabold mt-0.5">Memasuki Hari ke-2</h3>
+      </div>
+      <div id="reportBody" class="p-6 space-y-4 text-sm text-slate-700 max-h-[65vh] overflow-y-auto custom-scroll"></div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeModal('reportModal')" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">
+          Lanjutkan Tugas →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 9. SETTINGS / SAVE / LOAD MODAL                                       -->
+  <!-- ===================================================================== -->
+  <div id="menuModal" class="hidden fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-slate-800 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-extrabold text-base">Menu Permainan</h3>
+        <button onclick="closeModal('menuModal')" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center">✕</button>
+      </div>
+      <div class="p-5 space-y-3">
+        <button onclick="manualSaveGame()" class="w-full py-3 px-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-bold text-sm flex items-center justify-between">
+          <span>💾 Simpan Progres (LocalStorage)</span>
+          <span class="text-xs text-emerald-700">Auto-save Aktif</span>
+        </button>
+        <button onclick="closeModal('menuModal'); openModal('guideModal')" class="w-full py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-bold text-sm flex items-center justify-between">
+          <span>📘 Panduan Bermain & Struktur GitHub</span>
+          <span>→</span>
+        </button>
+        <button onclick="returnToTitle()" class="w-full py-3 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold text-sm flex items-center justify-between">
+          <span>🏠 Kembali ke Layar Utama</span>
+          <span>→</span>
+        </button>
+        <div class="pt-2 border-t border-slate-200">
+          <button id="btnResetConfirm" onclick="handleResetClick()" class="w-full py-2.5 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs">
+            🗑️ Hapus Save Data & Reset Permainan
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 10. GUIDE & GITHUB PAGES DEPLOYMENT STRUCTURE MODAL                   -->
+  <!-- ===================================================================== -->
+  <div id="guideModal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88vh]">
+      <div class="bg-emerald-900 px-6 py-4 text-white flex items-center justify-between shrink-0">
+        <h3 class="font-extrabold text-base sm:text-lg">📘 Panduan Bermain & Publikasi GitHub Pages</h3>
+        <button onclick="closeModal('guideModal')" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center">✕</button>
+      </div>
+      <div class="p-6 space-y-5 overflow-y-auto custom-scroll text-sm text-slate-700">
+        <div>
+          <h4 class="font-extrabold text-emerald-900 text-base mb-1.5">🎮 Cara Bermain</h4>
+          <ul class="list-disc pl-5 space-y-1 text-xs sm:text-sm">
+            <li><strong>Gerak Karakter:</strong> Gunakan tombol <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">W A S D</kbd> atau <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">Panah</kbd> di Desktop, atau Virtual D-Pad di Smartphone.</li>
+            <li><strong>Interaksi:</strong> Dekati warga (NPC) atau pintu bangunan lalu tekan <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">E</kbd> / <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">Spasi</kbd> atau tombol <strong>AKSI</strong>.</li>
+            <li><strong>Manajemen Keuangan:</strong> Anda memulai dengan dana <strong>Rp 12.000.000</strong>. Setiap program memiliki biaya, durasi hari pengerjaan, dan trade-off. Jangan habiskan seluruh likuiditas tanpa cadangan darurat!</li>
+            <li><strong>Zakat Produktif & ZISWAF:</strong> Kunjungi <strong>Masjid Al-Barakah</strong> atau <strong>Kantor Lembaga</strong> untuk menggalang dana ZISWAF. Program pemberdayaan ekonomi menghasilkan dampak berkelanjutan setiap hari.</li>
+          </ul>
+        </div>
+
+        <div class="bg-slate-900 text-slate-100 p-4 rounded-2xl font-mono text-xs overflow-x-auto">
+          <div class="text-amber-400 font-bold mb-1"># Struktur Proyek Siap GitHub Pages (Single-File Bundle)</div>
+          <pre class="leading-relaxed text-emerald-300">social-impact-manager/
+├── index.html   # Aplikasi lengkap (Engine Canvas 2D, Ekonomi, Quest, UI)
+└── README.md    # Dokumentasi & panduan deploy GitHub Pages</pre>
+        </div>
+
+        <div>
+          <h4 class="font-extrabold text-emerald-900 text-base mb-1.5">🚀 Langkah Publikasi ke GitHub Pages</h4>
+          <ol class="list-decimal pl-5 space-y-1 text-xs sm:text-sm">
+            <li>Buat repository baru di GitHub bernama <code class="bg-slate-100 px-1.5 py-0.5 rounded font-semibold">social-impact-manager</code>.</li>
+            <li>Simpan halaman ini sebagai <code class="bg-slate-100 px-1.5 py-0.5 rounded font-semibold">index.html</code> (atau klik tombol unduh di bawah) dan unggah ke repository.</li>
+            <li>Buka menu <strong>Settings → Pages</strong> pada repository GitHub Anda.</li>
+            <li>Pada bagian <strong>Build and deployment (Branch)</strong>, pilih branch <code class="bg-slate-100 px-1.5 py-0.5 rounded font-semibold">main</code> dan folder <code class="bg-slate-100 px-1.5 py-0.5 rounded font-semibold">/ (root)</code>, lalu klik <strong>Save</strong>.</li>
+            <li>Game Anda akan langsung aktif dan dapat dimainkan di <code class="text-emerald-700 font-semibold">https://username.github.io/social-impact-manager/</code>.</li>
+          </ol>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-2">
+          <button onclick="downloadStandaloneHTML()" class="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow flex items-center gap-2">
+            <span>⬇️ Unduh File index.html Siap Deploy</span>
+          </button>
+          <button onclick="downloadReadmeMD()" class="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs flex items-center gap-2">
+            <span>📄 Unduh README.md</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 11. GAME ENGINE & LOGIC (MODULAR ARCHITECTURE IN ONE FILE)            -->
+  <!-- ===================================================================== -->
+  <script>
+    /**
+     * =========================================================================
+     * MODULE 1: CONSTANTS, FORMATTING & SAVE SYSTEM (LocalStorage)
+     * =========================================================================
+     */
+    const STORAGE_KEY = 'social_impact_manager_save_v1';
+
+    function formatRupiah(amount) {
+      return 'Rp ' + Math.round(amount).toLocaleString('id-ID');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-800 text-white border-emerald-500',
+        warning: 'bg-amber-600 text-white border-amber-300',
+        danger: 'bg-red-700 text-white border-red-400',
+        info: 'bg-slate-800 text-white border-slate-600'
+      };
+      toast.className = `${colors[type] || colors.info} px-4 py-3 rounded-2xl shadow-xl border text-xs sm:text-sm font-semibold transform transition-all duration-300 translate-x-4 opacity-0`;
+      toast.innerText = message;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-x-4', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 2: GAME STATE & INITIAL DATA (ECONOMY, QUESTS, WORLD STATE)
+     * =========================================================================
+     */
+    const WORLD_WIDTH = 2200;
+    const WORLD_HEIGHT = 1650;
+
+    let selectedCharGender = 'male';
+    let gameRunning = false;
+    let resetConfirmStep = false;
+
+    const defaultGameState = () => ({
+      institutionName: 'Maslahat Nusantara Foundation',
+      gender: 'male',
+      day: 1,
+      funds: 12000000, // Rp 12.000.000 initial ZISWAF budget
+      reputation: 65,  // 0 - 100
+      totalImpact: 0,
+      beneficiaries: 0,
+      completedProgramsCount: 0,
+      productiveEndowmentLevel: 0, // Recurring impact & ZISWAF multiplier from UMKM programs
+      fundraiseCooldownDay: 0,
+      communityCampaignCooldownDay: 0,
+      weather: 'Cerah',
+      player: {
+        x: 620,
+        y: 520,
+        width: 32,
+        height: 44,
+        speed: 245,
+        dir: 'down', // 'down', 'up', 'left', 'right'
+        walkFrame: 0,
+        isMoving: false
+      },
+      worldFlags: {
+        waterRestored: false,
+        schoolRepaired: false,
+        clinicUpgraded: false,
+        floodResolved: false,
+        fireResolved: false,
+        umkmEmpowered: false,
+        scholarshipActive: false
+      },
+      activePrograms: [], // { id, questId, title, optionLabel, remainingDays, totalDays, impactReward, repReward, beneficiariesReward, flagKey, productiveBoost, evaluationNote }
+      completedHistory: [], // { day, title, optionLabel, cost, impact, efficiency }
+      quests: [
+        {
+          id: 'q_water',
+          title: 'Pemulihan Akses Air Bersih Warga',
+          category: 'Infrastruktur Dasar',
+          giverId: 'npc_sari',
+          unlockedDay: 1,
+          isCrisis: false,
+          status: 'available', // 'locked', 'available', 'in_progress', 'completed'
+          description: 'Sumur komunal di kawasan pemukiman warga mengering dan keruh. Warga terpaksa membeli air mahal atau memakai air sungai yang kurang higienis.',
+          urgentNote: 'Kebutuhan mendesak warga pemukiman (Bu Sari).',
+          options: [
+            {
+              id: 'opt_water_full',
+              label: 'Pembangunan Sumur Bor & Filtrasi Higienis',
+              tag: 'Rekomendasi • Dampak Optimal',
+              cost: 4000000,
+              duration: 1,
+              impact: 30,
+              rep: 10,
+              beneficiaries: 180,
+              efficiency: 'Tinggi (94%)',
+              flagKey: 'waterRestored',
+              productiveBoost: 0,
+              summary: 'Instalasi pompa tenaga surya & filter air bersih untuk 45 kepala keluarga.'
+            },
+            {
+              id: 'opt_water_patch',
+              label: 'Distribusi Tangki Air Darurat Sementara',
+              tag: 'Hemat Anggaran • Dampak Terbatas',
+              cost: 1800000,
+              duration: 1,
+              impact: 12,
+              rep: 2,
+              beneficiaries: 90,
+              efficiency: 'Sedang (65%)',
+              flagKey: 'waterRestored',
+              productiveBoost: 0,
+              summary: 'Solusi jangka pendek menyuplai air bersih selama beberapa pekan.'
+            }
+          ]
+        },
+        {
+          id: 'q_edu',
+          title: 'Rehabilitasi Ruang Kelas Sekolah Harapan',
+          category: 'Pendidikan',
+          giverId: 'npc_hasan',
+          unlockedDay: 1,
+          isCrisis: false,
+          status: 'available',
+          description: 'Atap dua ruang kelas di Sekolah Harapan bocor parah dan bangku belajar rusak, mengganggu proses belajar anak-anak desa.',
+          urgentNote: 'Dilaporkan oleh Pak Hasan (Guru Sekolah).',
+          options: [
+            {
+              id: 'opt_edu_full',
+              label: 'Renovasi Atap, Meja Belajar & Pojok Literasi',
+              tag: 'Dampak Pendidikan Tinggi',
+              cost: 3500000,
+              duration: 1,
+              impact: 25,
+              rep: 9,
+              beneficiaries: 120,
+              efficiency: 'Tinggi (91%)',
+              flagKey: 'schoolRepaired',
+              productiveBoost: 0,
+              summary: 'Perbaikan menyeluruh 2 ruang kelas dan pengadaan buku paket baru.'
+            },
+            {
+              id: 'opt_edu_basic',
+              label: 'Perbaikan Darurat Atap & Plafon',
+              tag: 'Biaya Lebih Rendah',
+              cost: 2000000,
+              duration: 1,
+              impact: 14,
+              rep: 4,
+              beneficiaries: 120,
+              efficiency: 'Cukup (74%)',
+              flagKey: 'schoolRepaired',
+              productiveBoost: 0,
+              summary: 'Menambal kebocoran atap agar kegiatan belajar tetap berjalan.'
+            }
+          ]
+        },
+        {
+          id: 'q_health',
+          title: 'Dukungan Layanan Klinik & Obat Esensial',
+          category: 'Kesehatan',
+          giverId: 'npc_nadia',
+          unlockedDay: 1,
+          isCrisis: false,
+          status: 'available',
+          description: 'Klinik Sehat Masyarakat kekurangan stok obat dasar, alat pemeriksaan ibu-anak, dan paket sanitasi pencegahan penyakit.',
+          urgentNote: 'Diajukan oleh Nadia (Relawan Kesehatan).',
+          options: [
+            {
+              id: 'opt_health_full',
+              label: 'Pengadaan Obat Esensial & Posyandu Keliling',
+              tag: 'Preventif & Kuratif',
+              cost: 2500000,
+              duration: 1,
+              impact: 20,
+              rep: 8,
+              beneficiaries: 150,
+              efficiency: 'Sangat Tinggi (96%)',
+              flagKey: 'clinicUpgraded',
+              productiveBoost: 0,
+              summary: 'Stok obat 3 bulan penuh serta layanan pemeriksaan gizi balita.'
+            },
+            {
+              id: 'opt_health_min',
+              label: 'Paket Obat Dasar & P3K Klinik',
+              tag: 'Efisiensi Kas',
+              cost: 1300000,
+              duration: 1,
+              impact: 10,
+              rep: 3,
+              beneficiaries: 75,
+              efficiency: 'Sedang (72%)',
+              flagKey: 'clinicUpgraded',
+              productiveBoost: 0,
+              summary: 'Pemenuhan kebutuhan obat mendesak skala kecil.'
+            }
+          ]
+        },
+        {
+          id: 'q_umkm',
+          title: 'Zakat Produktif: Pemberdayaan UMKM Pangan Desa',
+          category: 'Pemberdayaan Ekonomi',
+          giverId: 'npc_ratna',
+          unlockedDay: 1,
+          isCrisis: false,
+          status: 'available',
+          description: 'Ibu-ibu pelaku usaha mikro kesulitan modal alat produksi. Pendekatan Zakat Produktif & Qardhul Hasan dapat menciptakan kemandirian ekonomi jangka panjang.',
+          urgentNote: 'Program strategis di Balai Masyarakat (Ibu Ratna).',
+          options: [
+            {
+              id: 'opt_umkm_full',
+              label: 'Modal Alat Produksi + Pendampingan Usaha',
+              tag: 'Dampak Berkelanjutan (+Pasif Harian)',
+              cost: 3800000,
+              duration: 2,
+              impact: 35,
+              rep: 12,
+              beneficiaries: 60,
+              efficiency: 'Sangat Tinggi (95%)',
+              flagKey: 'umkmEmpowered',
+              productiveBoost: 1,
+              summary: 'Meningkatkan pendapatan keluarga mustahik menjadi muzakki (+5 Dampak & +Rp 450rb infak tiap hari).'
+            },
+            {
+              id: 'opt_umkm_cash',
+              label: 'Bantuan Tunai Konsumtif Keluarga Prasejahtera',
+              tag: 'Cepat • Tanpa Efek Berganda',
+              cost: 2000000,
+              duration: 1,
+              impact: 12,
+              rep: 4,
+              beneficiaries: 80,
+              efficiency: 'Rendah (58%)',
+              flagKey: 'umkmEmpowered',
+              productiveBoost: 0,
+              summary: 'Membantu konsumsi harian sementara namun tidak membangun aset usaha.'
+            }
+          ]
+        },
+        {
+          id: 'q_flood',
+          title: 'DARURAT BENCANA: Banjir Bandang & Evakuasi',
+          category: 'Tanggap Bencana',
+          giverId: 'npc_rahmat',
+          unlockedDay: 2,
+          isCrisis: true,
+          status: 'locked',
+          description: 'Hujan lebat memicu luapan sungai di bagian selatan desa! Sejumlah rumah terendam dan warga membutuhkan posko logistik serta perahu evakuasi.',
+          urgentNote: 'KRISIS AKTIF! Menunda penanganan menurunkan reputasi lembaga setiap hari.',
+          options: [
+            {
+              id: 'opt_flood_full',
+              label: 'Posko Dapur Umum, Evakuasi & Pemulihan Rumah',
+              tag: 'Respons Komprehensif',
+              cost: 4500000,
+              duration: 1,
+              impact: 40,
+              rep: 15,
+              beneficiaries: 220,
+              efficiency: 'Tinggi (92%)',
+              flagKey: 'floodResolved',
+              productiveBoost: 0,
+              summary: 'Evakuasi penuh, paket sembako keluarga terdampak, dan sanitasi pasca banjir.'
+            },
+            {
+              id: 'opt_flood_fast',
+              label: 'Distribusi Sembako & Selimut Darurat',
+              tag: 'Penanganan Cepat',
+              cost: 2400000,
+              duration: 1,
+              impact: 20,
+              rep: 6,
+              beneficiaries: 140,
+              efficiency: 'Sedang (75%)',
+              flagKey: 'floodResolved',
+              productiveBoost: 0,
+              summary: 'Bantuan logistik darurat untuk bertahan selama banjir surut.'
+            }
+          ]
+        },
+        {
+          id: 'q_dropout',
+          title: 'Beasiswa Cegah Anak Putus Sekolah (Beasiswa Maslahat)',
+          category: 'Pendidikan & Kemiskinan',
+          giverId: 'npc_hasan',
+          unlockedDay: 3,
+          isCrisis: false,
+          status: 'locked',
+          description: 'Akibat tekanan ekonomi pasca cuaca ekstrem, 25 siswa terancam putus sekolah karena orang tua tidak mampu membayar perlengkapan & transportasi.',
+          urgentNote: 'Direkomendasikan Pak Hasan & Pak Rahmat.',
+          options: [
+            {
+              id: 'opt_sch_full',
+              label: 'Beasiswa Penuh 1 Semester + Seragam & Buku',
+              tag: 'Investasi SDM Unggul',
+              cost: 3200000,
+              duration: 1,
+              impact: 32,
+              rep: 11,
+              beneficiaries: 100,
+              efficiency: 'Sangat Tinggi (94%)',
+              flagKey: 'scholarshipActive',
+              productiveBoost: 1,
+              summary: 'Menjamin 25 anak tetap bersekolah dan memperkuat indeks pembangunan desa.'
+            }
+          ]
+        },
+        {
+          id: 'q_fire',
+          title: 'DARURAT EKOLOGI: Kebakaran Lahan & Kabut Asap',
+          category: 'Bencana & Kesehatan',
+          giverId: 'npc_nadia',
+          unlockedDay: 4,
+          isCrisis: true,
+          status: 'locked',
+          description: 'Kebakaran hutan di perbatasan bukit menimbulkan kabut asap pekat! Kasus ISPA meningkat tajam di Klinik Sehat Masyarakat.',
+          urgentNote: 'KRISIS AKTIF! Warga membutuhkan masker N95, oksigen, dan dukungan pemadaman.',
+          options: [
+            {
+              id: 'opt_fire_full',
+              label: 'Klinik ISPA Darurat, Masker Medis & Logistik Relawan',
+              tag: 'Perlindungan Masyarakat',
+              cost: 4200000,
+              duration: 1,
+              impact: 38,
+              rep: 14,
+              beneficiaries: 260,
+              efficiency: 'Tinggi (93%)',
+              flagKey: 'fireResolved',
+              productiveBoost: 0,
+              summary: 'Distribusi 1.000 masker medis, tabung oksigen klinik, dan logistik tim pemadam.'
+            },
+            {
+              id: 'opt_fire_basic',
+              label: 'Pembagian Masker & Obat Batuk Massal',
+              tag: 'Mitigasi Minimal',
+              cost: 2100000,
+              duration: 1,
+              impact: 18,
+              rep: 5,
+              beneficiaries: 150,
+              efficiency: 'Sedang (70%)',
+              flagKey: 'fireResolved',
+              productiveBoost: 0,
+              summary: 'Mengurangi gejala ringan warga tanpa dukungan alat medis klinik.'
+            }
+          ]
+        }
+      ]
+    });
+
+    let state = defaultGameState();
+
+    /**
+     * =========================================================================
+     * MODULE 3: WORLD MAP, BUILDINGS, COLLISIONS & INTERACTIVE OBJECTS
+     * =========================================================================
+     */
+    const buildings = [
+      {
+        id: 'b_office',
+        name: 'Kantor Lembaga Sosial',
+        subtitle: 'Pusat Tata Kelola & Anggaran',
+        x: 460, y: 260, w: 260, h: 170,
+        doorX: 590, doorY: 440,
+        roofColor: '#065f46',
+        wallColor: '#f8fafc',
+        trimColor: '#d97706',
+        type: 'office'
+      },
+      {
+        id: 'b_mosque',
+        name: 'Masjid Al-Barakah',
+        subtitle: 'Pusat ZISWAF & Pemberdayaan Umat',
+        x: 1020, y: 230, w: 280, h: 195,
+        doorX: 1160, doorY: 435,
+        roofColor: '#047857',
+        wallColor: '#fefce8',
+        trimColor: '#eab308',
+        type: 'mosque'
+      },
+      {
+        id: 'b_school',
+        name: 'Sekolah Harapan',
+        subtitle: 'Fasilitas Pendidikan Desa',
+        x: 1560, y: 280, w: 270, h: 170,
+        doorX: 1695, doorY: 460,
+        roofColor: '#1d4ed8',
+        wallColor: '#f1f5f9',
+        trimColor: '#3b82f6',
+        type: 'school'
+      },
+      {
+        id: 'b_clinic',
+        name: 'Klinik Sehat Masyarakat',
+        subtitle: 'Layanan Kesehatan & Posyandu',
+        x: 1550, y: 860, w: 260, h: 165,
+        doorX: 1680, doorY: 1035,
+        roofColor: '#be123c',
+        wallColor: '#ffffff',
+        trimColor: '#f43f5e',
+        type: 'clinic'
+      },
+      {
+        id: 'b_hall',
+        name: 'Balai Masyarakat',
+        subtitle: 'Musyawarah & Inkubasi UMKM',
+        x: 980, y: 880, w: 280, h: 170,
+        doorX: 1120, doorY: 1060,
+        roofColor: '#92400e',
+        wallColor: '#fef3c7',
+        trimColor: '#b45309',
+        type: 'hall'
+      },
+      {
+        id: 'b_house1',
+        name: 'Pemukiman Warga Barat',
+        subtitle: 'Rumah Keluarga Bu Sari',
+        x: 340, y: 880, w: 200, h: 140,
+        doorX: 440, doorY: 1030,
+        roofColor: '#7c2d12',
+        wallColor: '#ffedd5',
+        trimColor: '#c2410c',
+        type: 'house'
+      },
+      {
+        id: 'b_house2',
+        name: 'Pemukiman Warga Selatan',
+        subtitle: 'Kawasan Terdampak Cuaca',
+        x: 600, y: 1180, w: 210, h: 140,
+        doorX: 705, doorY: 1330,
+        roofColor: '#78350f',
+        wallColor: '#fef3c7',
+        trimColor: '#d97706',
+        type: 'house'
+      }
+    ];
+
+    // Interactive Water Well in residential area
+    const waterWell = {
+      id: 'obj_well',
+      name: 'Sumur Komunal Warga',
+      x: 455,
+      y: 1130,
+      radius: 30
+    };
+
+    // Decorative & collision trees around the village
+    const trees = [
+      { x: 160, y: 200, r: 34 }, { x: 250, y: 360, r: 38 }, { x: 180, y: 580, r: 32 },
+      { x: 840, y: 220, r: 35 }, { x: 890, y: 340, r: 30 }, { x: 1420, y: 240, r: 36 },
+      { x: 1960, y: 250, r: 40 }, { x: 2010, y: 520, r: 34 }, { x: 1980, y: 780, r: 38 },
+      { x: 1950, y: 1150, r: 36 }, { x: 1410, y: 1150, r: 34 }, { x: 1350, y: 1380, r: 40 },
+      { x: 960, y: 1420, r: 36 }, { x: 320, y: 1350, r: 38 }, { x: 180, y: 1120, r: 34 },
+      { x: 840, y: 690, r: 28 }, { x: 1360, y: 690, r: 28 }
+    ];
+
+    // NPC Definitions
+    const npcs = [
+      {
+        id: 'npc_sari',
+        name: 'Bu Sari',
+        role: 'Warga Pemukiman',
+        avatar: '🧕',
+        x: 515,
+        y: 1085,
+        dir: 'right',
+        shirtColor: '#be185d',
+        hijabColor: '#fbcfe8',
+        gender: 'female',
+        questId: 'q_water'
+      },
+      {
+        id: 'npc_hasan',
+        name: 'Pak Hasan',
+        role: 'Kepala & Guru Sekolah Harapan',
+        avatar: '👨‍🏫',
+        x: 1640,
+        y: 510,
+        dir: 'down',
+        shirtColor: '#1e40af',
+        gender: 'male',
+        questId: 'q_edu',
+        secondaryQuestId: 'q_dropout'
+      },
+      {
+        id: 'npc_nadia',
+        name: 'Nadia',
+        role: 'Relawan Kesehatan Klinik',
+        avatar: '👩‍⚕️',
+        x: 1625,
+        y: 1085,
+        dir: 'down',
+        shirtColor: '#0d9488',
+        hijabColor: '#ffffff',
+        gender: 'female',
+        questId: 'q_health',
+        secondaryQuestId: 'q_fire'
+      },
+      {
+        id: 'npc_rahmat',
+        name: 'Pak Rahmat',
+        role: 'Koordinator Masyarakat Desa',
+        avatar: '🧔',
+        x: 880,
+        y: 565,
+        dir: 'left',
+        shirtColor: '#b45309',
+        gender: 'male',
+        questId: 'q_flood'
+      },
+      {
+        id: 'npc_fauzan',
+        name: 'Ustadz Fauzan',
+        role: 'Amil ZISWAF Masjid Al-Barakah',
+        avatar: '👳‍♂️',
+        x: 1215,
+        y: 485,
+        dir: 'down',
+        shirtColor: '#065f46',
+        gender: 'male',
+        isZiswafHub: true
+      },
+      {
+        id: 'npc_ratna',
+        name: 'Ibu Ratna',
+        role: 'Ketua Kelompok UMKM Desa',
+        avatar: '👩‍💼',
+        x: 1065,
+        y: 1110,
+        dir: 'down',
+        shirtColor: '#7e22ce',
+        hijabColor: '#f3e8ff',
+        gender: 'female',
+        questId: 'q_umkm'
+      }
+    ];
+
+    /**
+     * =========================================================================
+     * MODULE 4: HUMAN CHARACTER RENDERER (PROPORTIONAL 2D TOP-DOWN)
+     * =========================================================================
+     */
+    function drawHumanCharacter(ctx, x, y, options) {
+      const {
+        gender = 'male',
+        dir = 'down',
+        walkFrame = 0,
+        isMoving = false,
+        shirtColor = '#0f766e',
+        pantsColor = '#1e293b',
+        hijabColor = '#f8fafc',
+        skinColor = '#f1c29b',
+        hairColor = '#1e1b18',
+        isPlayer = false,
+        label = ''
+      } = options;
+
+      ctx.save();
+      ctx.translate(x, y);
+
+      // Ground soft shadow
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.24)';
+      ctx.beginPath();
+      ctx.ellipse(0, 20, 13, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Player indicator ring
+      if (isPlayer) {
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(0, 20, 17, 8, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Walking swing calculations (realistic human stride)
+      const swing = isMoving ? Math.sin(walkFrame * 0.25) : 0;
+      const bob = isMoving ? Math.abs(Math.cos(walkFrame * 0.25)) * 2 : 0;
+
+      // Legs (proportional height ~15px)
+      ctx.fillStyle = pantsColor;
+      if (dir === 'down' || dir === 'up') {
+        const leftLegY = 6 + swing * 3.5;
+        const rightLegY = 6 - swing * 3.5;
+        // Left leg
+        ctx.beginPath();
+        ctx.roundRect(-6.5, leftLegY, 5.2, 14, 2.5);
+        ctx.fill();
+        // Right leg
+        ctx.beginPath();
+        ctx.roundRect(1.3, rightLegY, 5.2, 14, 2.5);
+        ctx.fill();
+        // Shoes
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-6.8, leftLegY + 11.5, 5.6, 3);
+        ctx.fillRect(1.2, rightLegY + 11.5, 5.6, 3);
+      } else {
+        // Side profile legs
+        const leg1X = -2.5 + swing * 5;
+        const leg2X = -2.5 - swing * 5;
+        ctx.beginPath();
+        ctx.roundRect(leg2X, 6, 5.5, 14, 2.5);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(leg1X, 6, 5.5, 14, 2.5);
+        ctx.fill();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(leg1X, 17.5, 6.5, 3);
+      }
+
+      // Torso (proportional human shoulders & chest, not oversized head)
+      ctx.translate(0, -bob);
+      ctx.fillStyle = shirtColor;
+      if (dir === 'down' || dir === 'up') {
+        ctx.beginPath();
+        ctx.roundRect(-9.5, -10, 19, 18, 5);
+        ctx.fill();
+
+        // Professional vest / lanyard detail for front view
+        if (dir === 'down') {
+          ctx.fillStyle = 'rgba(255,255,255,0.22)';
+          ctx.fillRect(-3, -10, 6, 17);
+          // ID Card / Lanyard badge
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(2.5, -4, 3.5, 4.5);
+        }
+      } else {
+        // Side torso
+        ctx.beginPath();
+        ctx.roundRect(-6.5, -10, 13, 18, 4.5);
+        ctx.fill();
+      }
+
+      // Arms
+      ctx.fillStyle = shirtColor;
+      if (dir === 'down' || dir === 'up') {
+        const leftArmY = -8 - swing * 3;
+        const rightArmY = -8 + swing * 3;
+        ctx.beginPath();
+        ctx.roundRect(-13, leftArmY, 3.8, 13, 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.roundRect(9.2, rightArmY, 3.8, 13, 2);
+        ctx.fill();
+        // Hands
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.arc(-11.1, leftArmY + 13, 2, 0, Math.PI * 2);
+        ctx.arc(11.1, rightArmY + 13, 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        const armSwing = swing * 4.5;
+        ctx.save();
+        ctx.translate(0, -7);
+        ctx.rotate(armSwing * 0.08);
+        ctx.fillStyle = shirtColor;
+        ctx.beginPath();
+        ctx.roundRect(-2.2, 0, 4.4, 12, 2);
+        ctx.fill();
+        ctx.fillStyle = skinColor;
+        ctx.beginPath();
+        ctx.arc(0, 12.5, 2.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Neck
+      ctx.fillStyle = skinColor;
+      ctx.fillRect(-2.5, -13, 5, 4);
+
+      // Head (Realistic human head-to-body ratio ~ 1:6.5, radius ~6.8px)
+      const headY = -19;
+      if (gender === 'female') {
+        // Neat Hijab / Headscarf wrap
+        ctx.fillStyle = hijabColor;
+        ctx.beginPath();
+        ctx.arc(0, headY, 8.2, 0, Math.PI * 2);
+        ctx.fill();
+        // Hijab drape over shoulders
+        ctx.beginPath();
+        ctx.moveTo(-8, headY + 2);
+        ctx.quadraticCurveTo(0, headY + 13, 8, headY + 2);
+        ctx.fill();
+      }
+
+      // Face / Head base
+      ctx.fillStyle = skinColor;
+      ctx.beginPath();
+      if (gender === 'female') {
+        ctx.arc(dir === 'left' ? -1.5 : dir === 'right' ? 1.5 : 0, headY, 6.2, 0, Math.PI * 2);
+      } else {
+        ctx.arc(0, headY, 6.8, 0, Math.PI * 2);
+      }
+      ctx.fill();
+
+      // Male hair / Peci cap
+      if (gender === 'male') {
+        ctx.fillStyle = hairColor;
+        if (dir === 'up') {
+          ctx.beginPath();
+          ctx.arc(0, headY, 7, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(0, headY - 1.5, 6.8, Math.PI, 0);
+          ctx.fill();
+        }
+      }
+
+      // Eyes (only when facing front or sides)
+      ctx.fillStyle = '#0f172a';
+      if (dir === 'down') {
+        ctx.beginPath();
+        ctx.arc(-2.3, headY + 0.5, 1.1, 0, Math.PI * 2);
+        ctx.arc(2.3, headY + 0.5, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (dir === 'left') {
+        ctx.beginPath();
+        ctx.arc(-3.6, headY + 0.5, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (dir === 'right') {
+        ctx.beginPath();
+        ctx.arc(3.6, headY + 0.5, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+
+      // Optional floating nameplate for NPCs
+      if (label) {
+        ctx.save();
+        ctx.font = '700 11px "Plus Jakarta Sans", sans-serif';
+        const textWidth = ctx.measureText(label).width;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
+        ctx.beginPath();
+        ctx.roundRect(x - textWidth / 2 - 7, y - 44, textWidth + 14, 18, 6);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x, y - 31);
+        ctx.restore();
+      }
+    }
+
+    // Render character previews on Title Screen
+    function renderTitleCharacterPreviews() {
+      const cMale = document.getElementById('previewMaleCanvas');
+      if (cMale) {
+        const ctxM = cMale.getContext('2d');
+        ctxM.clearRect(0, 0, 64, 80);
+        ctxM.save();
+        ctxM.scale(1.45, 1.45);
+        drawHumanCharacter(ctxM, 22, 34, {
+          gender: 'male',
+          dir: 'down',
+          shirtColor: '#0f766e',
+          pantsColor: '#1e293b'
+        });
+        ctxM.restore();
+      }
+
+      const cFemale = document.getElementById('previewFemaleCanvas');
+      if (cFemale) {
+        const ctxF = cFemale.getContext('2d');
+        ctxF.clearRect(0, 0, 64, 80);
+        ctxF.save();
+        ctxF.scale(1.45, 1.45);
+        drawHumanCharacter(ctxF, 22, 34, {
+          gender: 'female',
+          dir: 'down',
+          shirtColor: '#047857',
+          hijabColor: '#fef3c7',
+          pantsColor: '#1e293b'
+        });
+        ctxF.restore();
+      }
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 5: INPUT HANDLING (KEYBOARD + VIRTUAL D-PAD TOUCH)
+     * =========================================================================
+     */
+    const keys = {
+      up: false,
+      down: false,
+      left: false,
+      right: false
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if (!gameRunning) return;
+      // Ignore movement if an input field is focused or a modal is open
+      if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+      const anyModalOpen = ['dialogueModal', 'dashboardModal', 'reportModal', 'menuModal', 'guideModal']
+        .some(id => !document.getElementById(id).classList.contains('hidden'));
+
+      if (e.key === 'Escape') {
+        ['dialogueModal', 'dashboardModal', 'reportModal', 'menuModal', 'guideModal'].forEach(closeModal);
+        return;
+      }
+
+      if (anyModalOpen) return;
+
+      const k = e.key.toLowerCase();
+      if (k === 'w' || e.key === 'ArrowUp') keys.up = true;
+      if (k === 's' || e.key === 'ArrowDown') keys.down = true;
+      if (k === 'a' || e.key === 'ArrowLeft') keys.left = true;
+      if (k === 'd' || e.key === 'ArrowRight') keys.right = true;
+      if (k === 'e' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        triggerInteraction();
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'w' || e.key === 'ArrowUp') keys.up = false;
+      if (k === 's' || e.key === 'ArrowDown') keys.down = false;
+      if (k === 'a' || e.key === 'ArrowLeft') keys.left = false;
+      if (k === 'd' || e.key === 'ArrowRight') keys.right = false;
+    });
+
+    function bindDpadButton(btnId, dirKey) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      const press = (e) => {
+        e.preventDefault();
+        keys[dirKey] = true;
+        btn.classList.add('active');
+      };
+      const release = (e) => {
+        e.preventDefault();
+        keys[dirKey] = false;
+        btn.classList.remove('active');
+      };
+      btn.addEventListener('touchstart', press, { passive: false });
+      btn.addEventListener('touchend', release, { passive: false });
+      btn.addEventListener('mousedown', press);
+      btn.addEventListener('mouseup', release);
+      btn.addEventListener('mouseleave', release);
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 6: COLLISION DETECTION & WORLD INTERACTION TARGETING
+     * =========================================================================
+     */
+    function checkCollision(nx, ny) {
+      const halfW = 12;
+      const footTop = ny + 2;
+      const footBottom = ny + 20;
+
+      // World boundaries
+      if (nx - halfW < 60 || nx + halfW > WORLD_WIDTH - 60 || footTop < 80 || footBottom > WORLD_HEIGHT - 60) {
+        return true;
+      }
+
+      // Buildings AABB
+      for (const b of buildings) {
+        if (
+          nx + halfW > b.x + 8 &&
+          nx - halfW < b.x + b.w - 8 &&
+          footBottom > b.y + 30 &&
+          footTop < b.y + b.h
+        ) {
+          return true;
+        }
+      }
+
+      // Water well circle collision
+      const dxWell = nx - waterWell.x;
+      const dyWell = (ny + 12) - waterWell.y;
+      if (Math.hypot(dxWell, dyWell) < waterWell.radius + 8) {
+        return true;
+      }
+
+      // Trees trunk collision
+      for (const t of trees) {
+        const dx = nx - t.x;
+        const dy = (ny + 12) - (t.y + 12);
+        if (Math.hypot(dx, dy) < 16) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    let currentInteractTarget = null;
+
+    function findNearestInteractable() {
+      const px = state.player.x;
+      const py = state.player.y;
+      let nearest = null;
+      let minDist = 82;
+
+      // Check NPCs
+      for (const npc of npcs) {
+        const d = Math.hypot(px - npc.x, py - npc.y);
+        if (d < minDist) {
+          minDist = d;
+          nearest = { type: 'npc', data: npc, label: `Bicara dengan ${npc.name}` };
+        }
+      }
+
+      // Check Building Doors
+      for (const b of buildings) {
+        const d = Math.hypot(px - b.doorX, py - b.doorY);
+        if (d < minDist) {
+          minDist = d;
+          nearest = { type: 'building', data: b, label: `Masuk / Cek ${b.name}` };
+        }
+      }
+
+      // Check Water Well
+      const dWell = Math.hypot(px - waterWell.x, py - waterWell.y);
+      if (dWell < minDist) {
+        nearest = { type: 'well', data: waterWell, label: 'Periksa Sumur Komunal' };
+      }
+
+      return nearest;
+    }
+
+    function triggerInteraction() {
+      if (!currentInteractTarget) {
+        showToast('Dekati warga (NPC) atau pintu bangunan untuk berinteraksi.', 'info');
+        return;
+      }
+
+      if (currentInteractTarget.type === 'npc') {
+        openNpcDialogue(currentInteractTarget.data);
+      } else if (currentInteractTarget.type === 'building') {
+        openBuildingDialogue(currentInteractTarget.data);
+      } else if (currentInteractTarget.type === 'well') {
+        openWellDialogue();
+      }
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 7: DYNAMIC DIALOGUE, QUESTS & ECONOMIC DECISION ENGINE
+     * =========================================================================
+     */
+    function getQuestById(id) {
+      return state.quests.find(q => q.id === id);
+    }
+
+    function openNpcDialogue(npc) {
+      const modal = document.getElementById('dialogueModal');
+      document.getElementById('dlgAvatar').innerText = npc.avatar;
+      document.getElementById('dlgRole').innerText = npc.role;
+      document.getElementById('dlgName').innerText = npc.name;
+
+      const dlgText = document.getElementById('dlgText');
+      const questBox = document.getElementById('dlgQuestBox');
+      const actions = document.getElementById('dlgActions');
+      questBox.innerHTML = '';
+      questBox.classList.add('hidden');
+      actions.innerHTML = '';
+
+      // Determine active or available quest for this NPC
+      let activeQuest = null;
+      if (npc.secondaryQuestId) {
+        const q2 = getQuestById(npc.secondaryQuestId);
+        if (q2 && (q2.status === 'available' || q2.status === 'in_progress')) {
+          activeQuest = q2;
+        }
+      }
+      if (!activeQuest && npc.questId) {
+        activeQuest = getQuestById(npc.questId);
+      }
+
+      // Custom contextual dialogues based on world progression
+      if (npc.isZiswafHub) {
+        dlgText.innerHTML = `
+          <p>"Assalamu'alaikum Manajer <strong>${state.institutionName}</strong>. Alhamdulillah masyarakat semakin percaya pada transparansi penyaluran ZISWAF kita."</p>
+          <p class="mt-2 text-xs text-slate-500">Reputasi lembaga saat ini <strong>${state.reputation}%</strong>. Semakin tinggi reputasi dan pemberdayaan ekonomi, semakin besar potensi infak & sedekah yang terhimpun.</p>
+        `;
+        actions.innerHTML = `
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('fundraising')" class="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm">
+            🕌 Galang Dana ZISWAF & Wakaf Produktif
+          </button>
+          <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm">
+            Terima kasih, Ustadz
+          </button>
+        `;
+        openModal('dialogueModal');
+        return;
+      }
+
+      // Situational dialogue for NPCs with quests
+      if (activeQuest) {
+        if (activeQuest.status === 'completed') {
+          dlgText.innerHTML = getCompletedNpcDialogue(npc.id);
+          actions.innerHTML = `
+            <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-emerald-700 text-white font-bold text-xs sm:text-sm">
+              Alhamdulillah, teruskan kebaikan!
+            </button>
+          `;
+        } else if (activeQuest.status === 'in_progress') {
+          dlgText.innerHTML = `"Terima kasih! Tim lapangan sudah mulai mengerjakan program <strong>${activeQuest.title}</strong>. InsyaAllah selesai pada pergantian hari berikutnya."`;
+          actions.innerHTML = `
+            <button onclick="closeModal('dialogueModal'); openDashboardModal('programs')" class="px-4 py-2.5 rounded-xl bg-teal-700 text-white font-bold text-xs sm:text-sm">
+              📊 Pantau Progres Program
+            </button>
+            <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm">
+              Tutup
+            </button>
+          `;
+        } else if (activeQuest.status === 'available') {
+          dlgText.innerHTML = getAvailableNpcDialogue(npc.id, activeQuest);
+          questBox.classList.remove('hidden');
+          questBox.innerHTML = renderQuestDecisionCards(activeQuest);
+          actions.innerHTML = `
+            <button onclick="closeModal('dialogueModal')" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs">
+              Pertimbangkan Anggaran Dulu
+            </button>
+          `;
+        } else {
+          // Locked quest
+          dlgText.innerHTML = `"Kondisi di lingkungan kami masih terpantau kondusif hari ini, Pak/Bu Manajer. Namun kami selalu siap berkoordinasi jika ada perkembangan."`;
+          actions.innerHTML = `<button onclick="closeModal('dialogueModal')" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs">Baik, tetap waspada</button>`;
+        }
+      }
+
+      openModal('dialogueModal');
+    }
+
+    function getAvailableNpcDialogue(npcId, quest) {
+      const lines = {
+        npc_sari: `"Assalamu'alaikum! Syukurlah Anda datang. Sumur warga di pemukiman kami kering dan airnya keruh sejak pekan lalu. Anak-anak mulai kesulitan air bersih untuk mandi dan memasak."`,
+        npc_hasan: quest.id === 'q_edu'
+          ? `"Selamat datang di Sekolah Harapan. Beberapa atap kelas bocor dan meja belajar rusak. Jika hujan turun, anak-anak terpaksa belajar berdesakan di sudut ruangan."`
+          : `"Terima kasih ruang kelas sudah nyaman kembali! Namun ada tantangan baru: 25 siswa dari keluarga prasejahtera terancam putus sekolah karena orang tua kehilangan penghasilan."`,
+        npc_nadia: quest.id === 'q_health'
+          ? `"Halo Manajer! Di Klinik Sehat Masyarakat, stok obat dasar dan perlengkapan pemeriksaan ibu-balita menipis. Warga sangat bergantung pada klinik ini."`
+          : `"Situasi darurat! Kebakaran lahan di perbatasan bukit mengirim kabut asap pekat ke desa. Banyak warga mengalami sesak napas dan ISPA di klinik!"`,
+        npc_rahmat: `"Assalamu'alaikum Manajer! Sebagai koordinator warga, saya melaporkan banjir bandang melanda pemukiman selatan akibat luapan sungai. Warga butuh posko evakuasi dan logistik segera!"`,
+        npc_ratna: `"Assalamu'alaikum. Banyak ibu rumah tangga di desa ini punya keterampilan olahan pangan, tapi terkendala alat produksi dan modal. Dengan Zakat Produktif, mereka bisa mandiri secara ekonomi."`
+      };
+      return lines[npcId] || quest.description;
+    }
+
+    function getCompletedNpcDialogue(npcId) {
+      const lines = {
+        npc_sari: `"Alhamdulillah, air bersih dari sumur komunal kini mengalir jernih! Warga tidak lagi kesulitan air dan kesehatan keluarga kami jauh membaik. Terima kasih ${state.institutionName}!"`,
+        npc_hasan: `"Anak-anak kini belajar dengan penuh semangat di Sekolah Harapan! Dukungan pendidikan dari lembaga Anda benar-benar mengubah masa depan generasi desa ini."`,
+        npc_nadia: `"Layanan kesehatan di klinik berjalan lancar dan stok obat terpenuhi. Warga merasa jauh lebih aman dan terlindungi berkat bantuan cepat lembaga Anda."`,
+        npc_rahmat: `"Koordinasi tanggap darurat berjalan luar biasa! Warga selatan sudah kembali pulih dan memuji kesigapan tim Anda."`,
+        npc_ratna: `"Alhamdulillah, kelompok UMKM pangan kini sudah berproduksi rutin! Sebagian keuntungan bahkan mulai mereka infakkan kembali ke kotak ZISWAF desa."`
+      };
+      return lines[npcId] || `"Terima kasih atas kontribusi nyata lembaga Anda bagi masyarakat!"`;
+    }
+
+    function renderQuestDecisionCards(quest) {
+      let html = `
+        <div class="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800">${quest.category}</span>
+            ${quest.isCrisis ? '<span class="px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-bold">PRIORITAS KRISIS</span>' : ''}
+          </div>
+          <h4 class="font-extrabold text-slate-900 text-sm sm:text-base mt-1">${quest.title}</h4>
+          <p class="text-xs text-slate-600 mt-1">${quest.description}</p>
+        </div>
+        <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Pilih Skema Alokasi Anggaran:</div>
+      `;
+
+      quest.options.forEach(opt => {
+        const canAfford = state.funds >= opt.cost;
+        const remainingAfter = state.funds - opt.cost;
+        const lowLiquidityWarning = canAfford && remainingAfter < 2000000;
+
+        html += `
+          <div class="border ${canAfford ? 'border-slate-200 hover:border-emerald-500 bg-white' : 'border-red-200 bg-red-50/40'} rounded-2xl p-3.5 transition shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <span class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 mb-1">${opt.tag}</span>
+                <h5 class="font-bold text-slate-900 text-sm">${opt.label}</h5>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-extrabold ${canAfford ? 'text-emerald-700' : 'text-red-600'}">${formatRupiah(opt.cost)}</div>
+                <div class="text-[11px] text-slate-500">Durasi: ${opt.duration} Hari</div>
+              </div>
+            </div>
+            <p class="text-xs text-slate-600 mt-1.5">${opt.summary}</p>
+            <div class="mt-2.5 flex flex-wrap items-center gap-2 text-[11px] font-semibold">
+              <span class="px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800">♥ +${opt.impact} Dampak</span>
+              <span class="px-2 py-0.5 rounded-lg bg-amber-50 text-amber-800">★ +${opt.rep}% Reputasi</span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700">👥 ${opt.beneficiaries} Jiwa</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700">Efisiensi: ${opt.efficiency}</span>
+            </div>
+            ${lowLiquidityWarning ? `<div class="mt-2 text-[11px] text-amber-700 font-semibold">⚠️ Peringatan Likuiditas: Sisa kas akan menjadi ${formatRupiah(remainingAfter)} (rawan jika ada krisis mendadak).</div>` : ''}
+            <div class="mt-3 flex justify-end">
+              <button onclick="executeQuestOption('${quest.id}', '${opt.id}')" ${canAfford ? '' : 'disabled'}
+                class="px-4 py-2 rounded-xl font-bold text-xs transition ${canAfford ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">
+                ${canAfford ? 'Setujui & Jalankan Program' : 'Dana Tidak Mencukupi'}
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      return html;
+    }
+
+    function executeQuestOption(questId, optionId) {
+      const quest = getQuestById(questId);
+      if (!quest || quest.status !== 'available') return;
+      const opt = quest.options.find(o => o.id === optionId);
+      if (!opt) return;
+
+      if (state.funds < opt.cost) {
+        showToast('Anggaran lembaga tidak mencukupi untuk skema ini!', 'danger');
+        return;
+      }
+
+      // Deduct funds immediately (commitment accounting)
+      state.funds -= opt.cost;
+      quest.status = 'in_progress';
+
+      state.activePrograms.push({
+        id: 'prog_' + Date.now(),
+        questId: quest.id,
+        title: quest.title,
+        optionLabel: opt.label,
+        cost: opt.cost,
+        remainingDays: opt.duration,
+        totalDays: opt.duration,
+        impactReward: opt.impact,
+        repReward: opt.rep,
+        beneficiariesReward: opt.beneficiaries,
+        efficiency: opt.efficiency,
+        flagKey: opt.flagKey,
+        productiveBoost: opt.productiveBoost || 0,
+        evaluationNote: opt.summary
+      });
+
+      closeModal('dialogueModal');
+      updateHUD();
+      autoSaveGame();
+      showToast(`Program "${quest.title}" dimulai! Selesai dalam ${opt.duration} hari.`, 'success');
+    }
+
+    function openBuildingDialogue(building) {
+      const modal = document.getElementById('dialogueModal');
+      document.getElementById('dlgRole').innerText = building.subtitle;
+      document.getElementById('dlgName').innerText = building.name;
+
+      const dlgText = document.getElementById('dlgText');
+      const questBox = document.getElementById('dlgQuestBox');
+      const actions = document.getElementById('dlgActions');
+      questBox.innerHTML = '';
+      questBox.classList.add('hidden');
+
+      if (building.type === 'office') {
+        document.getElementById('dlgAvatar').innerText = '🏢';
+        dlgText.innerHTML = `
+          <p>Selamat datang di <strong>Kantor ${state.institutionName}</strong>.</p>
+          <p class="mt-1.5 text-xs text-slate-600">Dari sini Anda dapat mengevaluasi portofolio program sosial, memantau rasio likuiditas kas, menggalang dana ZISWAF, atau mengakhiri hari kerja untuk memproses program lapangan.</p>
+        `;
+        actions.innerHTML = `
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('overview')" class="px-4 py-2.5 rounded-xl bg-emerald-700 text-white font-bold text-xs sm:text-sm">📊 Buka Dashboard Lembaga</button>
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('fundraising')" class="px-4 py-2.5 rounded-xl bg-amber-500 text-white font-bold text-xs sm:text-sm">💰 Galang Dana ZISWAF</button>
+          <button onclick="closeModal('dialogueModal'); advancePeriodPrompt()" class="px-4 py-2.5 rounded-xl bg-slate-800 text-white font-bold text-xs sm:text-sm">⏭️ Akhiri Hari ke-${state.day}</button>
+        `;
+      } else if (building.type === 'mosque') {
+        document.getElementById('dlgAvatar').innerText = '🕌';
+        dlgText.innerHTML = `
+          <p><strong>Masjid Al-Barakah</strong> merupakan pusat sinergi spiritual dan penghimpunan Zakat, Infak, Sedekah, dan Wakaf (ZISWAF) warga desa.</p>
+          <p class="mt-1.5 text-xs text-slate-600">Temui Ustadz Fauzan atau lakukan kampanye penghimpunan dana umat untuk memperkuat kapasitas anggaran lembaga.</p>
+        `;
+        actions.innerHTML = `
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('fundraising')" class="px-4 py-2.5 rounded-xl bg-emerald-700 text-white font-bold text-xs sm:text-sm">🕌 Kelola Penghimpunan ZISWAF</button>
+          <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm">Tutup</button>
+        `;
+      } else if (building.type === 'school') {
+        document.getElementById('dlgAvatar').innerText = '🏫';
+        const statusTxt = state.worldFlags.schoolRepaired
+          ? 'Fasilitas ruang kelas telah direhabilitasi dengan baik. Kegiatan belajar berlangsung nyaman.'
+          : 'Kondisi atap dan bangku sekolah membutuhkan rehabilitasi segera. Bicaralah dengan Pak Hasan di depan sekolah.';
+        dlgText.innerHTML = `<p>${statusTxt}</p>`;
+        actions.innerHTML = `
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('quests')" class="px-4 py-2.5 rounded-xl bg-blue-700 text-white font-bold text-xs sm:text-sm">📋 Cek Program Pendidikan</button>
+          <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm">Tutup</button>
+        `;
+      } else if (building.type === 'clinic') {
+        document.getElementById('dlgAvatar').innerText = '🏥';
+        const statusTxt = state.worldFlags.clinicUpgraded
+          ? 'Klinik Sehat Masyarakat memiliki stok obat esensial dan layanan Posyandu aktif.'
+          : 'Klinik mengalami keterbatasan obat esensial. Koordinasikan bantuan bersama Relawan Nadia.';
+        dlgText.innerHTML = `<p>${statusTxt}</p>`;
+        actions.innerHTML = `
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('quests')" class="px-4 py-2.5 rounded-xl bg-rose-700 text-white font-bold text-xs sm:text-sm">📋 Cek Program Kesehatan</button>
+          <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm">Tutup</button>
+        `;
+      } else if (building.type === 'hall') {
+        document.getElementById('dlgAvatar').innerText = '🏛️';
+        dlgText.innerHTML = `<p><strong>Balai Masyarakat</strong> digunakan untuk musyawarah warga, koordinasi mitigasi bencana, serta pelatihan pemberdayaan UMKM bersama Ibu Ratna.</p>`;
+        actions.innerHTML = `
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('quests')" class="px-4 py-2.5 rounded-xl bg-amber-700 text-white font-bold text-xs sm:text-sm">📋 Lihat Program Pemberdayaan</button>
+          <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm">Tutup</button>
+        `;
+      } else {
+        document.getElementById('dlgAvatar').innerText = '🏡';
+        dlgText.innerHTML = `<p>Kawasan pemukiman warga desa. Kesejahteraan dan ketahanan keluarga di sini menjadi tolok ukur utama keberhasilan program sosial Anda.</p>`;
+        actions.innerHTML = `<button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm">Tutup</button>`;
+      }
+
+      openModal('dialogueModal');
+    }
+
+    function openWellDialogue() {
+      const modal = document.getElementById('dialogueModal');
+      document.getElementById('dlgAvatar').innerText = '🚰';
+      document.getElementById('dlgRole').innerText = 'Infrastruktur Air Desa';
+      document.getElementById('dlgName').innerText = 'Sumur Komunal Warga';
+      document.getElementById('dlgQuestBox').classList.add('hidden');
+
+      if (state.worldFlags.waterRestored) {
+        document.getElementById('dlgText').innerHTML = `<p class="text-emerald-800 font-semibold">✅ Sumur komunal sudah berfungsi optimal! Air bersih mengalir jernih untuk memenuhi kebutuhan sehari-hari warga sekitar.</p>`;
+      } else {
+        document.getElementById('dlgText').innerHTML = `<p class="text-amber-800 font-semibold">⚠️ Debit air sangat rendah dan keruh. Bicaralah dengan Bu Sari di dekat pemukiman untuk menyalurkan program pemulihan air bersih.</p>`;
+      }
+
+      document.getElementById('dlgActions').innerHTML = `
+        <button onclick="closeModal('dialogueModal')" class="px-4 py-2 rounded-xl bg-emerald-700 text-white font-bold text-xs">Mengerti</button>
+      `;
+      openModal('dialogueModal');
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 8: ZISWAF FUNDRAISING & PERIOD PROGRESSION ENGINE
+     * =========================================================================
+     */
+    function runFundraising(type) {
+      if (type === 'ziswaf_campaign') {
+        if (state.day < state.fundraiseCooldownDay) {
+          showToast(`Kampanye ZISWAF baru dapat dilakukan lagi pada Hari ke-${state.fundraiseCooldownDay}.`, 'warning');
+          return;
+        }
+        // Fundraising amount scales with Institution Reputation & Productive Endowment
+        const baseAmount = 1800000;
+        const repBonus = Math.round((state.reputation / 100) * 1700000);
+        const endowmentBonus = state.productiveEndowmentLevel * 400000;
+        const totalRaised = baseAmount + repBonus + endowmentBonus;
+
+        state.funds += totalRaised;
+        state.fundraiseCooldownDay = state.day + 2;
+        updateHUD();
+        autoSaveGame();
+        openDashboardModal('fundraising');
+        showToast(`Alhamdulillah! Terhimpun dana ZISWAF sebesar ${formatRupiah(totalRaised)}.`, 'success');
+      } else if (type === 'csr_partnership') {
+        if (state.reputation < 75) {
+          showToast('Mitra filantropi institusional mensyaratkan Reputasi minimal 75%!', 'warning');
+          return;
+        }
+        if (state.day < state.communityCampaignCooldownDay) {
+          showToast(`Sinergi mitra dapat diajukan kembali pada Hari ke-${state.communityCampaignCooldownDay}.`, 'warning');
+          return;
+        }
+        const grant = 3500000 + state.productiveEndowmentLevel * 500000;
+        state.funds += grant;
+        state.communityCampaignCooldownDay = state.day + 3;
+        updateHUD();
+        autoSaveGame();
+        openDashboardModal('fundraising');
+        showToast(`Dana hibah sinergi filantropi cair sebesar ${formatRupiah(grant)}!`, 'success');
+      }
+    }
+
+    function advancePeriodPrompt() {
+      // Directly process end-of-day evaluation & advance period with clear report modal
+      processNextPeriod();
+    }
+
+    function processNextPeriod() {
+      const prevDay = state.day;
+      state.day += 1;
+
+      const reportLogs = [];
+      let completedNow = 0;
+
+      // 1. Process Active Programs
+      const stillActive = [];
+      for (const prog of state.activePrograms) {
+        prog.remainingDays -= 1;
+        if (prog.remainingDays <= 0) {
+          // Program completed!
+          completedNow++;
+          state.completedProgramsCount += 1;
+          state.totalImpact += prog.impactReward;
+          state.reputation = Math.min(100, state.reputation + prog.repReward);
+          state.beneficiaries += prog.beneficiariesReward;
+          state.productiveEndowmentLevel += prog.productiveBoost;
+
+          if (prog.flagKey) {
+            state.worldFlags[prog.flagKey] = true;
+          }
+
+          const q = getQuestById(prog.questId);
+          if (q) q.status = 'completed';
+
+          state.completedHistory.unshift({
+            day: state.day,
+            title: prog.title,
+            optionLabel: prog.optionLabel,
+            cost: prog.cost,
+            impact: prog.impactReward,
+            efficiency: prog.efficiency
+          });
+
+          reportLogs.push(`✅ <strong>Program Selesai:</strong> ${prog.title} (${prog.optionLabel}) — Dampak +${prog.impactReward}, Reputasi +${prog.repReward}%, Terbantu +${prog.beneficiariesReward} jiwa.`);
+        } else {
+          stillActive.push(prog);
+          reportLogs.push(`⏳ <strong>Berjalan:</strong> ${prog.title} (Sisa ${prog.remainingDays} hari).`);
+        }
+      }
+      state.activePrograms = stillActive;
+
+      // 2. Recurring returns from Productive Empowerment (Zakat Produktif / Beasiswa)
+      if (state.productiveEndowmentLevel > 0) {
+        const recurringInfak = state.productiveEndowmentLevel * 450000;
+        const recurringImpact = state.productiveEndowmentLevel * 5;
+        state.funds += recurringInfak;
+        state.totalImpact += recurringImpact;
+        reportLogs.push(`🌱 <strong>Dampak Berkelanjutan (Pemberdayaan):</strong> UMKM & SDM binaan menghasilkan infak bergulir <strong>+${formatRupiah(recurringInfak)}</strong> dan <strong>+${recurringImpact} Poin Dampak</strong>.`);
+      }
+
+      // 3. Penalty for unaddressed active crises
+      const unaddressedCrises = state.quests.filter(q => q.isCrisis && q.status === 'available');
+      if (unaddressedCrises.length > 0) {
+        const repLoss = unaddressedCrises.length * 6;
+        state.reputation = Math.max(10, state.reputation - repLoss);
+        reportLogs.push(`🚨 <strong>Peringatan Krisis Tertunda:</strong> ${unaddressedCrises.length} krisis belum ditangani. Kepercayaan masyarakat turun <strong>-${repLoss}%</strong>.`);
+      }
+
+      // 4. Unlock dynamic evolving challenges based on Day
+      let newChallengeUnlocked = null;
+      state.quests.forEach(q => {
+        if (q.status === 'locked' && state.day >= q.unlockedDay) {
+          q.status = 'available';
+          newChallengeUnlocked = q;
+        }
+      });
+
+      if (newChallengeUnlocked) {
+        if (newChallengeUnlocked.id === 'q_flood') {
+          state.weather = '🌧️ Hujan Lebat (Siaga Banjir)';
+          reportLogs.push(`🌊 <strong>Tantangan Dinamis Baru:</strong> Curah hujan tinggi memicu banjir bandang di selatan desa! Temui <strong>Pak Rahmat</strong> segera.`);
+        } else if (newChallengeUnlocked.id === 'q_dropout') {
+          reportLogs.push(`📚 <strong>Tantangan Sosial Baru:</strong> Pak Hasan melaporkan risiko anak putus sekolah akibat tekanan ekonomi keluarga.`);
+        } else if (newChallengeUnlocked.id === 'q_fire') {
+          state.weather = '🌫️ Kabut Asap (Siaga ISPA)';
+          reportLogs.push(`🔥 <strong>Darurat Ekologi Baru:</strong> Kebakaran lahan bukit memicu kabut asap! Relawan <strong>Nadia</strong> membutuhkan dukungan klinik.`);
+        }
+      } else if (!state.quests.some(q => q.isCrisis && q.status === 'available')) {
+        state.weather = '☀️ Cerah • Kondusif';
+      }
+
+      if (reportLogs.length === 0) {
+        reportLogs.push(`ℹ️ Tidak ada program yang selesai hari ini. Eksplorasi desa dan bicaralah dengan warga untuk mengidentifikasi kebutuhan sosial.`);
+      }
+
+      // Show Period Report Modal
+      document.getElementById('reportTitle').innerText = `Evaluasi Akhir Hari ke-${prevDay} → Hari ke-${state.day}`;
+      document.getElementById('reportBody').innerHTML = `
+        <div class="grid grid-cols-3 gap-2.5 text-center">
+          <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-200">
+            <div class="text-[10px] font-bold text-emerald-700 uppercase">Saldo Kas</div>
+            <div class="text-xs sm:text-sm font-extrabold text-emerald-900 mt-0.5">${formatRupiah(state.funds)}</div>
+          </div>
+          <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200">
+            <div class="text-[10px] font-bold text-amber-700 uppercase">Reputasi</div>
+            <div class="text-xs sm:text-sm font-extrabold text-amber-900 mt-0.5">${state.reputation}%</div>
+          </div>
+          <div class="bg-teal-50 p-3 rounded-2xl border border-teal-200">
+            <div class="text-[10px] font-bold text-teal-700 uppercase">Total Dampak</div>
+            <div class="text-xs sm:text-sm font-extrabold text-teal-900 mt-0.5">${state.totalImpact} Poin</div>
+          </div>
+        </div>
+        <div class="space-y-2 pt-1">
+          ${reportLogs.map(item => `<div class="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs sm:text-sm leading-relaxed">${item}</div>`).join('')}
+        </div>
+      `;
+
+      updateHUD();
+      autoSaveGame();
+      openModal('reportModal');
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 9: INSTITUTIONAL MANAGEMENT DASHBOARD UI
+     * =========================================================================
+     */
+    function openDashboardModal(tab = 'overview') {
+      openModal('dashboardModal');
+      switchDashTab(tab);
+    }
+
+    function switchDashTab(tab) {
+      const tabs = ['overview', 'quests', 'programs', 'fundraising'];
+      tabs.forEach(t => {
+        const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (el) {
+          if (t === tab) {
+            el.className = 'px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-b-2 border-emerald-700 text-emerald-800 bg-white shrink-0';
+          } else {
+            el.className = 'px-4 py-2.5 text-xs sm:text-sm font-bold rounded-t-xl border-b-2 border-transparent text-slate-600 hover:text-slate-900 shrink-0';
+          }
+        }
+      });
+
+      const content = document.getElementById('dashContent');
+
+      if (tab === 'overview') {
+        const liquidityStatus = state.funds >= 4000000
+          ? { label: 'Sehat & Likuid', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' }
+          : state.funds >= 1800000
+          ? { label: 'Waspada (Cadangan Tipis)', color: 'text-amber-700 bg-amber-50 border-amber-200' }
+          : { label: 'Kritis (Segera Galang ZISWAF)', color: 'text-red-700 bg-red-50 border-red-200' };
+
+        content.innerHTML = `
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+              <div class="text-[11px] font-bold text-emerald-700 uppercase">Dana Lembaga</div>
+              <div class="text-base sm:text-lg font-extrabold text-emerald-950 mt-1">${formatRupiah(state.funds)}</div>
+              <div class="text-[11px] text-emerald-700 mt-1">Periode: Hari ke-${state.day}</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+              <div class="text-[11px] font-bold text-amber-700 uppercase">Reputasi Lembaga</div>
+              <div class="text-base sm:text-lg font-extrabold text-amber-950 mt-1">${state.reputation}%</div>
+              <div class="text-[11px] text-amber-700 mt-1">Kepercayaan Publik</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-teal-50 border border-teal-200">
+              <div class="text-[11px] font-bold text-teal-700 uppercase">Total Dampak Sosial</div>
+              <div class="text-base sm:text-lg font-extrabold text-teal-950 mt-1">${state.totalImpact} Poin</div>
+              <div class="text-[11px] text-teal-700 mt-1">${state.beneficiaries} Jiwa Terbantu</div>
+            </div>
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+              <div class="text-[11px] font-bold text-slate-600 uppercase">Kinerja Program</div>
+              <div class="text-base sm:text-lg font-extrabold text-slate-900 mt-1">${state.completedProgramsCount} Selesai</div>
+              <div class="text-[11px] text-slate-600 mt-1">${state.activePrograms.length} Sedang Berjalan</div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl border ${liquidityStatus.color} flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="text-xs font-extrabold uppercase tracking-wider">Analisis Kesehatan Keuangan & Opportunity Cost</div>
+              <p class="text-xs mt-1 leading-relaxed">
+                Status Likuiditas: <strong>${liquidityStatus.label}</strong>. 
+                ${state.productiveEndowmentLevel > 0
+                  ? `Anda memiliki <strong>${state.productiveEndowmentLevel} unit pemberdayaan produktif</strong> yang menghasilkan +${formatRupiah(state.productiveEndowmentLevel * 450000)}/hari.`
+                  : 'Belum ada program pemberdayaan produktif aktif. Pertimbangkan skema Zakat Produktif untuk kemandirian jangka panjang.'}
+              </p>
+            </div>
+            <button onclick="switchDashTab('fundraising')" class="px-3.5 py-2 rounded-xl bg-emerald-800 text-white font-bold text-xs shrink-0">
+              Kelola Dana →
+            </button>
+          </div>
+
+          <div>
+            <h4 class="font-extrabold text-slate-800 text-sm mb-2">Peta Kebutuhan Masyarakat Desa</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+              <div class="p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                <span>🚰 Akses Air Bersih (Bu Sari)</span>
+                <span class="font-bold ${state.worldFlags.waterRestored ? 'text-emerald-700' : 'text-amber-600'}">${state.worldFlags.waterRestored ? '✅ Terpenuhi' : '⚠️ Krisis Air'}</span>
+              </div>
+              <div class="p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                <span>🏫 Fasilitas Sekolah (Pak Hasan)</span>
+                <span class="font-bold ${state.worldFlags.schoolRepaired ? 'text-emerald-700' : 'text-amber-600'}">${state.worldFlags.schoolRepaired ? '✅ Terpenuhi' : '⚠️ Rusak'}</span>
+              </div>
+              <div class="p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                <span>🏥 Klinik Kesehatan (Nadia)</span>
+                <span class="font-bold ${state.worldFlags.clinicUpgraded ? 'text-emerald-700' : 'text-amber-600'}">${state.worldFlags.clinicUpgraded ? '✅ Terpenuhi' : '⚠️ Terbatas'}</span>
+              </div>
+              <div class="p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+                <span>💼 Pemberdayaan UMKM (Ibu Ratna)</span>
+                <span class="font-bold ${state.worldFlags.umkmEmpowered ? 'text-emerald-700' : 'text-slate-500'}">${state.worldFlags.umkmEmpowered ? '✅ Mandiri' : '⏳ Menunggu Modal'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (tab === 'quests') {
+        const visibleQuests = state.quests.filter(q => q.status !== 'locked');
+        content.innerHTML = `
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-slate-600">Pilih misi di bawah atau temui langsung tokoh masyarakat di peta untuk berdialog dan menyalurkan program.</p>
+          </div>
+          <div class="space-y-3">
+            ${visibleQuests.map(q => {
+              const giver = npcs.find(n => n.id === q.giverId);
+              const badge = q.status === 'completed'
+                ? '<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold">✅ Selesai</span>'
+                : q.status === 'in_progress'
+                ? '<span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold">⏳ Berjalan</span>'
+                : q.isCrisis
+                ? '<span class="px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[11px] font-bold">🚨 DARURAT</span>'
+                : '<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold">📋 Tersedia</span>';
+
+              return `
+                <div class="p-4 rounded-2xl border ${q.isCrisis && q.status === 'available' ? 'border-red-300 bg-red-50/30' : 'border-slate-200 bg-white'} space-y-2">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <span class="text-[11px] font-bold text-emerald-700 uppercase">${q.category} • ${giver ? giver.name : ''}</span>
+                      <h4 class="font-extrabold text-slate-900 text-sm sm:text-base">${q.title}</h4>
+                    </div>
+                    ${badge}
+                  </div>
+                  <p class="text-xs text-slate-600">${q.description}</p>
+                  ${q.status === 'available' ? `
+                    <div class="pt-1 flex justify-end">
+                      <button onclick="closeModal('dashboardModal'); openNpcDialogue(npcs.find(n => n.id === '${q.giverId}'))" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs">
+                        Tinjau Opsi Anggaran →
+                      </button>
+                    </div>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      } else if (tab === 'programs') {
+        content.innerHTML = `
+          <div>
+            <h4 class="font-extrabold text-slate-800 text-sm mb-2">Program Sedang Berjalan (${state.activePrograms.length})</h4>
+            ${state.activePrograms.length === 0
+              ? '<div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500">Belum ada program yang sedang dieksekusi di lapangan.</div>'
+              : `<div class="space-y-2.5">
+                  ${state.activePrograms.map(p => `
+                    <div class="p-4 rounded-2xl bg-teal-50/60 border border-teal-200 flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div class="font-extrabold text-slate-900 text-sm">${p.title}</div>
+                        <div class="text-xs text-slate-600">${p.optionLabel} • Anggaran: ${formatRupiah(p.cost)}</div>
+                      </div>
+                      <span class="px-3 py-1 rounded-xl bg-teal-700 text-white font-bold text-xs">Sisa ${p.remainingDays} Hari</span>
+                    </div>
+                  `).join('')}
+                </div>`
+            }
+          </div>
+
+          <div>
+            <h4 class="font-extrabold text-slate-800 text-sm mb-2">Riwayat Evaluasi Program Selesai (${state.completedHistory.length})</h4>
+            ${state.completedHistory.length === 0
+              ? '<div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500">Belum ada program yang selesai dievaluasi. Selesaikan minimal 1 hari kerja setelah memulai program.</div>'
+              : `<div class="space-y-2.5">
+                  ${state.completedHistory.map(h => `
+                    <div class="p-3.5 rounded-2xl bg-white border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <div>
+                        <div class="font-bold text-slate-900">Hari ke-${h.day}: ${h.title}</div>
+                        <div class="text-slate-500">${h.optionLabel} • Efisiensi: <strong class="text-emerald-700">${h.efficiency}</strong></div>
+                      </div>
+                      <div class="text-right font-bold">
+                        <div class="text-slate-700">${formatRupiah(h.cost)}</div>
+                        <div class="text-teal-700">+${h.impact} Poin Dampak</div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>`
+            }
+          </div>
+        `;
+      } else if (tab === 'fundraising') {
+        const canZiswaf = state.day >= state.fundraiseCooldownDay;
+        const estZiswaf = 1800000 + Math.round((state.reputation / 100) * 1700000) + state.productiveEndowmentLevel * 400000;
+        const canCsr = state.reputation >= 75 && state.day >= state.communityCampaignCooldownDay;
+        const estCsr = 3500000 + state.productiveEndowmentLevel * 500000;
+
+        content.innerHTML = `
+          <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl text-xs text-emerald-900 leading-relaxed">
+            <strong>Prinsip Keberlanjutan Keuangan Lembaga:</strong> Penyaluran dana tanpa penghimpunan yang sehat akan menghabiskan likuiditas. Tingkat <strong>Reputasi (${state.reputation}%)</strong> menentukan seberapa besar kepercayaan muzakki dan donatur terhadap lembaga Anda.
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between space-y-3">
+              <div>
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">ZISWAF Komunitas</span>
+                <h4 class="font-extrabold text-slate-900 text-base mt-1">Kampanye Zakat, Infak & Sedekah</h4>
+                <p class="text-xs text-slate-600 mt-1">Mengajak jamaah Masjid Al-Barakah dan donatur ritel menyalurkan ZISWAF melalui laporan transparansi dampak.</p>
+                <div class="mt-3 p-2.5 rounded-xl bg-slate-50 text-xs">
+                  Estimasi Perolehan: <strong class="text-emerald-700">${formatRupiah(estZiswaf)}</strong>
+                </div>
+              </div>
+              <button onclick="runFundraising('ziswaf_campaign')" ${canZiswaf ? '' : 'disabled'}
+                class="w-full py-2.5 px-4 rounded-xl font-bold text-xs transition ${canZiswaf ? 'bg-emerald-700 hover:bg-emerald-800 text-white shadow' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}">
+                ${canZiswaf ? 'Himpun Dana ZISWAF Sekarang' : `Tersedia Kembali Hari ke-${state.fundraiseCooldownDay}`}
+              </button>
+            </div>
+
+            <div class="p-4 rounded-2xl border border-slate-200 bg-white flex flex-col justify-between space-y-3">
+              <div>
+                <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">Sinergi Filantropi</span>
+                <h4 class="font-extrabold text-slate-900 text-base mt-1">Hibah Mitra & Wakaf Produktif</h4>
+                <p class="text-xs text-slate-600 mt-1">Kolaborasi pendanaan program strategis dengan lembaga keuangan syariah & mitra filantropi. <strong>Syarat: Reputasi ≥ 75%.</strong></p>
+                <div class="mt-3 p-2.5 rounded-xl bg-slate-50 text-xs">
+                  Estimasi Hibah: <strong class="text-amber-700">${formatRupiah(estCsr)}</strong>
+                </div>
+              </div>
+              <button onclick="runFundraising('csr_partnership')" ${canCsr ? '' : 'disabled'}
+                class="w-full py-2.5 px-4 rounded-xl font-bold text-xs transition ${canCsr ? 'bg-amber-600 hover:bg-amber-700 text-white shadow' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}">
+                ${state.reputation < 75 ? `Butuh Reputasi 75% (Saat ini ${state.reputation}%)` : canCsr ? 'Ajukan Sinergi Pendanaan' : `Tersedia Hari ke-${state.communityCampaignCooldownDay}`}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 10: HUD UPDATES, MODALS & LOCALSTORAGE PERSISTENCE
+     * =========================================================================
+     */
+    function updateHUD() {
+      document.getElementById('hudDay').innerText = state.day;
+      document.getElementById('hudInstName').innerText = state.institutionName;
+      document.getElementById('hudWeather').innerText = state.weather;
+      document.getElementById('hudFunds').innerText = formatRupiah(state.funds);
+      document.getElementById('hudReputation').innerText = state.reputation + '%';
+      document.getElementById('hudRepBar').style.width = state.reputation + '%';
+      document.getElementById('hudImpact').innerText = state.totalImpact + ' Poin';
+      document.getElementById('hudBeneficiaries').innerText = state.beneficiaries + ' Jiwa';
+
+      document.getElementById('badgeActivePrograms').innerText = state.activePrograms.length;
+      const availCount = state.quests.filter(q => q.status === 'available').length;
+      document.getElementById('badgeAvailableQuests').innerText = availCount;
+
+      // Crisis banner check
+      const activeCrisis = state.quests.find(q => q.isCrisis && q.status === 'available');
+      const crisisBanner = document.getElementById('crisisBanner');
+      if (activeCrisis) {
+        crisisBanner.classList.remove('hidden');
+        document.getElementById('crisisBannerText').innerText = `${activeCrisis.title} — Segera alokasikan bantuan!`;
+      } else {
+        crisisBanner.classList.add('hidden');
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+      if (id === 'menuModal') {
+        resetConfirmStep = false;
+        const btn = document.getElementById('btnResetConfirm');
+        if (btn) btn.innerText = '🗑️ Hapus Save Data & Reset Permainan';
+      }
+    }
+
+    function autoSaveGame() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.warn('LocalStorage save failed:', e);
+      }
+    }
+
+    function manualSaveGame() {
+      autoSaveGame();
+      showToast('Progres permainan berhasil disimpan ke browser!', 'success');
+      closeModal('menuModal');
+    }
+
+    function checkSavedGameExists() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.day) {
+            const btn = document.getElementById('btnContinueGame');
+            btn.classList.remove('hidden');
+            btn.innerHTML = `<span>Lanjutkan (Hari ke-${parsed.day})</span>`;
+          }
+        }
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    function selectCharacter(gender) {
+      selectedCharGender = gender;
+      const maleCard = document.getElementById('selectMale');
+      const femaleCard = document.getElementById('selectFemale');
+      const badgeMale = document.getElementById('badgeMale');
+      const badgeFemale = document.getElementById('badgeFemale');
+
+      if (gender === 'male') {
+        maleCard.className = 'cursor-pointer group relative rounded-2xl border-2 border-emerald-600 bg-emerald-50/70 p-4 flex items-center gap-4 transition-all hover:shadow-md';
+        femaleCard.className = 'cursor-pointer group relative rounded-2xl border-2 border-slate-200 bg-white p-4 flex items-center gap-4 transition-all hover:border-emerald-400 hover:shadow-md';
+        badgeMale.className = 'w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold';
+        badgeFemale.className = 'w-5 h-5 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center text-xs font-bold';
+      } else {
+        femaleCard.className = 'cursor-pointer group relative rounded-2xl border-2 border-emerald-600 bg-emerald-50/70 p-4 flex items-center gap-4 transition-all hover:shadow-md';
+        maleCard.className = 'cursor-pointer group relative rounded-2xl border-2 border-slate-200 bg-white p-4 flex items-center gap-4 transition-all hover:border-emerald-400 hover:shadow-md';
+        badgeFemale.className = 'w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold';
+        badgeMale.className = 'w-5 h-5 rounded-full border-2 border-slate-300 text-transparent flex items-center justify-center text-xs font-bold';
+      }
+    }
+
+    function startNewGame() {
+      const nameInput = document.getElementById('institutionNameInput').value.trim();
+      state = defaultGameState();
+      state.gender = selectedCharGender;
+      state.institutionName = nameInput || 'Maslahat Nusantara Foundation';
+
+      launchGameScreen();
+      autoSaveGame();
+      showToast(`Selamat bertugas di ${state.institutionName}! Temui warga di desa.`, 'success');
+    }
+
+    function continueSavedGame() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const loaded = JSON.parse(raw);
+        state = { ...defaultGameState(), ...loaded };
+        launchGameScreen();
+        showToast(`Progres Hari ke-${state.day} berhasil dimuat!`, 'success');
+      } catch (e) {
+        showToast('Gagal memuat data simpanan, memulai sesi baru.', 'warning');
+        startNewGame();
+      }
+    }
+
+    function launchGameScreen() {
+      document.getElementById('titleScreen').classList.add('hidden');
+      document.getElementById('gameHUD').classList.remove('hidden');
+      document.getElementById('mobileControls').classList.remove('hidden');
+      updateHUD();
+      gameRunning = true;
+    }
+
+    function returnToTitle() {
+      closeModal('menuModal');
+      gameRunning = false;
+      document.getElementById('gameHUD').classList.add('hidden');
+      document.getElementById('mobileControls').classList.add('hidden');
+      document.getElementById('interactionPrompt').classList.add('hidden');
+      checkSavedGameExists();
+      document.getElementById('titleScreen').classList.remove('hidden');
+    }
+
+    function handleResetClick() {
+      const btn = document.getElementById('btnResetConfirm');
+      if (!resetConfirmStep) {
+        resetConfirmStep = true;
+        btn.innerText = '⚠️ Klik Sekali Lagi untuk Konfirmasi Reset';
+        return;
+      }
+      localStorage.removeItem(STORAGE_KEY);
+      resetConfirmStep = false;
+      closeModal('menuModal');
+      document.getElementById('btnContinueGame').classList.add('hidden');
+      returnToTitle();
+      showToast('Data simpanan telah dihapus.', 'info');
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 11: GITHUB PAGES EXPORT HELPERS (STANDALONE HTML & README)
+     * =========================================================================
+     */
+    function downloadStandaloneHTML() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('File index.html berhasil diunduh!', 'success');
+    }
+
+    function downloadReadmeMD() {
+      const readme = `# SOCIAL IMPACT MANAGER
+
+Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RPG) yang terinspirasi dari ekosistem **Islamic Social Finance** dan **BSI Maslahat**.
+
+## Fitur Utama
+- **Pilihan Karakter Proporsional 2D Top-Down**: Amil (Laki-laki) & Amilah (Perempuan) dengan animasi berjalan 4 arah.
+- **Eksplorasi Desa Interaktif**: Kantor Lembaga Sosial, Masjid Al-Barakah, Sekolah Harapan, Klinik Sehat Masyarakat, Balai Masyarakat, dan Pemukiman Warga.
+- **NPC & Sistem Quest Dinamis**: Dialog yang berkembang sesuai progres dunia serta tantangan krisis (Krisis Air Bersih, Rehabilitasi Sekolah, Layanan Klinik, Pemberdayaan UMKM Zakat Produktif, Banjir Bandang, Kebakaran Lahan).
+- **Manajemen Keuangan & Dampak Sosial**: Anggaran terbatas, analisis likuiditas, opportunity cost, penghimpunan ZISWAF, dan penyimpanan progres otomatis via \`LocalStorage\`.
+
+## Cara Publikasi ke GitHub Pages
+1. Buat repository baru di GitHub bernama \`social-impact-manager\`.
+2. Unggah \`index.html\` dan \`README.md\` ke branch \`main\`.
+3. Masuk ke **Settings → Pages**, pilih source **Deploy from a branch** (\`main\` / \`root\`), lalu klik **Save**.
+4. Akses game Anda melalui \`https://<username>.github.io/social-impact-manager/\`.
+`;
+      const blob = new Blob([readme], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'README.md';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('File README.md berhasil diunduh!', 'success');
+    }
+
+    /**
+     * =========================================================================
+     * MODULE 12: 2D CANVAS WORLD RENDERER & MAIN GAME LOOP
+     * =========================================================================
+     */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawBuilding(ctx, b) {
+      ctx.save();
+
+      // Drop shadow
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.2)';
+      ctx.beginPath();
+      ctx.roundRect(b.x + 8, b.y + 12, b.w, b.h, 14);
+      ctx.fill();
+
+      // Main building wall
+      ctx.fillStyle = b.wallColor;
+      ctx.beginPath();
+      ctx.roundRect(b.x, b.y + 38, b.w, b.h - 38, [0, 0, 12, 12]);
+      ctx.fill();
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Roof
+      ctx.fillStyle = b.roofColor;
+      ctx.beginPath();
+      ctx.roundRect(b.x - 6, b.y, b.w + 12, 54, 14);
+      ctx.fill();
+
+      // Roof highlight stripe
+      ctx.fillStyle = b.trimColor;
+      ctx.fillRect(b.x - 4, b.y + 46, b.w + 8, 6);
+
+      // Special architectural feature for Mosque (Golden Dome & Crescent)
+      if (b.type === 'mosque') {
+        const cx = b.x + b.w / 2;
+        ctx.fillStyle = '#eab308';
+        ctx.beginPath();
+        ctx.arc(cx, b.y + 8, 34, Math.PI, 0);
+        ctx.fill();
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Finial
+        ctx.fillRect(cx - 1.5, b.y - 34, 3, 12);
+        ctx.beginPath();
+        ctx.arc(cx, b.y - 36, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Special medical cross for Clinic
+      if (b.type === 'clinic') {
+        const cx = b.x + b.w / 2;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(cx, b.y + 24, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#e11d48';
+        ctx.fillRect(cx - 3, b.y + 15, 6, 18);
+        ctx.fillRect(cx - 9, b.y + 21, 18, 6);
+      }
+
+      // Windows
+      ctx.fillStyle = '#bae6fd';
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+      const winPositions = [b.x + 28, b.x + b.w - 64];
+      winPositions.forEach(wx => {
+        ctx.beginPath();
+        ctx.roundRect(wx, b.y + 74, 36, 32, 6);
+        ctx.fill();
+        ctx.stroke();
+        // Window crosspane
+        ctx.beginPath();
+        ctx.moveTo(wx + 18, b.y + 74);
+        ctx.lineTo(wx + 18, b.y + 106);
+        ctx.moveTo(wx, b.y + 90);
+        ctx.lineTo(wx + 36, b.y + 90);
+        ctx.stroke();
+      });
+
+      // Doorway
+      ctx.fillStyle = '#475569';
+      ctx.beginPath();
+      ctx.roundRect(b.doorX - 20, b.y + b.h - 54, 40, 54, [8, 8, 0, 0]);
+      ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(b.doorX + 12, b.y + b.h - 26, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Door Mat / Interaction Zone pad
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.28)';
+      ctx.beginPath();
+      ctx.ellipse(b.doorX, b.doorY, 26, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Building Name Signboard
+      ctx.font = '800 12px "Plus Jakarta Sans", sans-serif';
+      const labelW = ctx.measureText(b.name).width + 20;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.beginPath();
+      ctx.roundRect(b.x + b.w / 2 - labelW / 2, b.y + 12, labelW, 24, 8);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.name, b.x + b.w / 2, b.y + 28);
+
+      ctx.restore();
+    }
+
+    function drawTree(ctx, t) {
+      ctx.save();
+      // Shadow
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.18)';
+      ctx.beginPath();
+      ctx.ellipse(t.x + 6, t.y + 22, t.r * 0.85, t.r * 0.4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Trunk
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(t.x - 6, t.y, 12, 22);
+
+      // Layered foliage
+      ctx.fillStyle = '#15803d';
+      ctx.beginPath();
+      ctx.arc(t.x, t.y - 8, t.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(t.x - 6, t.y - 14, t.r * 0.72, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawWorldEnvironment(ctx) {
+      // Base lush grass field
+      ctx.fillStyle = '#65a35a';
+      ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+      // Subtle grass grid texture
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+      for (let gx = 0; gx < WORLD_WIDTH; gx += 80) {
+        for (let gy = 0; gy < WORLD_HEIGHT; gy += 80) {
+          if ((gx + gy) % 160 === 0) {
+            ctx.fillRect(gx, gy, 80, 80);
+          }
+        }
+      }
+
+      // Village Roads (Clean paved stone/earth paths connecting all buildings)
+      ctx.fillStyle = '#e2e8f0';
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 4;
+
+      // Main East-West Avenue
+      ctx.beginPath();
+      ctx.roundRect(280, 560, 1520, 95, 20);
+      ctx.fill();
+      ctx.stroke();
+
+      // North-South Central Boulevard
+      ctx.beginPath();
+      ctx.roundRect(840, 420, 95, 860, 20);
+      ctx.fill();
+      ctx.stroke();
+
+      // Southern Residential Road
+      ctx.beginPath();
+      ctx.roundRect(380, 1140, 1340, 80, 20);
+      ctx.fill();
+      ctx.stroke();
+
+      // Connectors to Buildings
+      ctx.fillRect(565, 430, 50, 135);  // Office connector
+      ctx.fillRect(1135, 425, 50, 140); // Mosque connector
+      ctx.fillRect(1670, 450, 50, 115); // School connector
+      ctx.fillRect(1655, 1025, 50, 120);// Clinic connector
+      ctx.fillRect(1095, 1050, 50, 95); // Balai connector
+      ctx.fillRect(415, 1020, 50, 125); // West house connector
+
+      // Central Village Plaza / Taman Maslahat
+      ctx.fillStyle = '#fef3c7';
+      ctx.beginPath();
+      ctx.arc(888, 608, 92, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#d97706';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Plaza inner emerald emblem
+      ctx.fillStyle = '#0f766e';
+      ctx.beginPath();
+      ctx.arc(888, 608, 34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 10px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('ALUN-ALUN', 888, 605);
+      ctx.fillText('MASLAHAT', 888, 618);
+
+      // River / Stream in South-East corner (flood indicator when flood crisis active)
+      const floodActive = !state.worldFlags.floodResolved && getQuestById('q_flood')?.status === 'available';
+      ctx.fillStyle = floodActive ? '#0284c7' : '#38bdf8';
+      ctx.beginPath();
+      ctx.moveTo(60, 1490);
+      ctx.quadraticCurveTo(750, 1440, 1450, 1510);
+      ctx.quadraticCurveTo(1850, 1550, 2140, 1470);
+      ctx.lineTo(2140, 1650);
+      ctx.lineTo(60, 1650);
+      ctx.closePath();
+      ctx.fill();
+
+      // Water Well in Residential area
+      ctx.save();
+      ctx.fillStyle = '#64748b';
+      ctx.beginPath();
+      ctx.arc(waterWell.x, waterWell.y, waterWell.radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = state.worldFlags.waterRestored ? '#0ea5e9' : '#78350f';
+      ctx.beginPath();
+      ctx.arc(waterWell.x, waterWell.y, waterWell.radius - 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '700 10px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText(state.worldFlags.waterRestored ? 'AIR BERSIH' : 'SUMUR KERING', waterWell.x, waterWell.y + 42);
+      ctx.restore();
+
+      // Perimeter wooden fence
+      ctx.strokeStyle = '#92400e';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(55, 75, WORLD_WIDTH - 110, WORLD_HEIGHT - 135);
+    }
+
+    let lastTimestamp = 0;
+
+    function update(dt) {
+      if (!gameRunning) return;
+
+      const anyModalOpen = ['dialogueModal', 'dashboardModal', 'reportModal', 'menuModal', 'guideModal']
+        .some(id => !document.getElementById(id).classList.contains('hidden'));
+      if (anyModalOpen) {
+        state.player.isMoving = false;
+        return;
+      }
+
+      let vx = 0;
+      let vy = 0;
+      if (keys.up) vy -= 1;
+      if (keys.down) vy += 1;
+      if (keys.left) vx -= 1;
+      if (keys.right) vx += 1;
+
+      if (vx !== 0 || vy !== 0) {
+        // Normalize diagonal speed
+        const len = Math.hypot(vx, vy);
+        vx /= len;
+        vy /= len;
+
+        // Update facing direction
+        if (Math.abs(vx) > Math.abs(vy)) {
+          state.player.dir = vx < 0 ? 'left' : 'right';
+        } else {
+          state.player.dir = vy < 0 ? 'up' : 'down';
+        }
+
+        const stepX = vx * state.player.speed * dt;
+        const stepY = vy * state.player.speed * dt;
+
+        // Axis-separated sliding collision so player doesn't get stuck on walls
+        if (!checkCollision(state.player.x + stepX, state.player.y)) {
+          state.player.x += stepX;
+        }
+        if (!checkCollision(state.player.x, state.player.y + stepY)) {
+          state.player.y += stepY;
+        }
+
+        state.player.isMoving = true;
+        state.player.walkFrame += dt * 45;
+      } else {
+        state.player.isMoving = false;
+        state.player.walkFrame = 0;
+      }
+
+      // Check nearby interactables
+      currentInteractTarget = findNearestInteractable();
+      const promptEl = document.getElementById('interactionPrompt');
+      if (currentInteractTarget) {
+        promptEl.classList.remove('hidden');
+        document.getElementById('interactionPromptText').innerText = currentInteractTarget.label;
+      } else {
+        promptEl.classList.add('hidden');
+      }
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Smooth Camera Centering on Player clamped to World Bounds
+      let camX = state.player.x - canvas.width / 2;
+      let camY = state.player.y - canvas.height / 2;
+      camX = Math.max(0, Math.min(WORLD_WIDTH - canvas.width, camX));
+      camY = Math.max(0, Math.min(WORLD_HEIGHT - canvas.height, camY));
+
+      ctx.save();
+      ctx.translate(-camX, -camY);
+
+      // 1. Ground, Roads & Plaza
+      drawWorldEnvironment(ctx);
+
+      // 2. Depth-sorted entities (Buildings, Trees, NPCs, Player)
+      const renderList = [];
+
+      buildings.forEach(b => {
+        renderList.push({
+          sortY: b.y + b.h,
+          draw: () => drawBuilding(ctx, b)
+        });
+      });
+
+      trees.forEach(t => {
+        renderList.push({
+          sortY: t.y + 18,
+          draw: () => drawTree(ctx, t)
+        });
+      });
+
+      npcs.forEach(npc => {
+        renderList.push({
+          sortY: npc.y + 20,
+          draw: () => {
+            drawHumanCharacter(ctx, npc.x, npc.y, {
+              gender: npc.gender,
+              dir: npc.dir,
+              shirtColor: npc.shirtColor,
+              hijabColor: npc.hijabColor,
+              label: npc.name
+            });
+
+            // Quest Indicator Icon above NPC
+            let q = npc.secondaryQuestId ? getQuestById(npc.secondaryQuestId) : null;
+            if (!q || q.status === 'locked' || q.status === 'completed') {
+              q = npc.questId ? getQuestById(npc.questId) : null;
+            }
+            if (q && q.status === 'available') {
+              ctx.save();
+              ctx.fillStyle = q.isCrisis ? '#dc2626' : '#f59e0b';
+              ctx.beginPath();
+              ctx.arc(npc.x, npc.y - 56, 10, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#ffffff';
+              ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('!', npc.x, npc.y - 51);
+              ctx.restore();
+            } else if (npc.isZiswafHub) {
+              ctx.save();
+              ctx.fillStyle = '#059669';
+              ctx.beginPath();
+              ctx.arc(npc.x, npc.y - 56, 10, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#fef08a';
+              ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText('Rp', npc.x, npc.y - 52);
+              ctx.restore();
+            }
+          }
+        });
+      });
+
+      // Player Character
+      renderList.push({
+        sortY: state.player.y + 20,
+        draw: () => {
+          drawHumanCharacter(ctx, state.player.x, state.player.y, {
+            gender: state.gender,
+            dir: state.player.dir,
+            walkFrame: state.player.walkFrame,
+            isMoving: state.player.isMoving,
+            shirtColor: state.gender === 'male' ? '#0f766e' : '#047857',
+            hijabColor: '#fef3c7',
+            pantsColor: '#1e293b',
+            isPlayer: true
+          });
+        }
+      });
+
+      // Sort back-to-front by Y coordinate
+      renderList.sort((a, b) => a.sortY - b.sortY);
+      renderList.forEach(item => item.draw());
+
+      // Weather atmospheric tint overlay (for smoke/rain crises)
+      if (state.weather.includes('Kabut Asap')) {
+        ctx.fillStyle = 'rgba(180, 83, 9, 0.16)';
+        ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+      } else if (state.weather.includes('Hujan')) {
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.15)';
+        ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+      }
+
+      ctx.restore();
+    }
+
+    function gameLoop(timestamp) {
+      if (!lastTimestamp) lastTimestamp = timestamp;
+      const dt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+      lastTimestamp = timestamp;
+
+      update(dt);
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Initialize application on window load
+    window.onload = function () {
+      renderTitleCharacterPreviews();
+      checkSavedGameExists();
+      bindDpadButton('dpadUp', 'up');
+      bindDpadButton('dpadDown', 'down');
+      bindDpadButton('dpadLeft', 'left');
+      bindDpadButton('dpadRight', 'right');
+      requestAnimationFrame(gameLoop);
+    };
+  </script>
+</body>
+</html>
