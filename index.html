@@ -277,9 +277,10 @@
         </button>
 
         <button onclick="openDashboardModal('quests')" class="glass-panel hover:bg-amber-50 text-slate-800 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md font-bold text-xs flex items-center gap-1.5 transition active:scale-95 relative">
-          <span class="text-amber-600 text-sm">📋</span>
-          <span>Misi</span>
-          <span id="badgeAvailableQuests" class="px-1.5 py-0.2 bg-amber-500 text-white rounded-full text-[10px]">3</span>
+          <span class="text-amber-600 text-sm">📋</span><span>Misi</span><span id="badgeAvailableQuests" class="px-1.5 py-0.2 bg-amber-500 text-white rounded-full text-[10px]">3</span>
+        </button>
+        <button onclick="openDisasterCenter()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md font-bold text-xs flex items-center gap-1.5 transition active:scale-95">
+          <span>🚨</span><span class="hidden sm:inline">Situasi Darurat</span><span id="badgeDisasters" class="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">0</span>
         </button>
 
         <button onclick="advancePeriodPrompt()" class="bg-emerald-800 hover:bg-emerald-900 text-white px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md font-bold text-xs flex items-center gap-1.5 transition active:scale-95 border border-emerald-600">
@@ -343,6 +344,15 @@
   <!-- ===================================================================== -->
   <!-- 6. RPG DIALOGUE & DECISION MODAL                                      -->
   <!-- ===================================================================== -->
+  <div id="disasterModal" class="hidden fixed inset-0 z-40 bg-slate-950/65 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 sm:p-6">
+    <div class="w-full max-w-3xl max-h-[88vh] overflow-hidden bg-white rounded-3xl shadow-2xl border border-red-100 flex flex-col">
+      <div class="bg-gradient-to-r from-red-900 to-orange-700 px-5 py-4 text-white flex items-center justify-between">
+        <div><div class="text-[10px] font-extrabold tracking-widest text-orange-200 uppercase">Emergency Response Center</div><h3 class="text-lg font-extrabold">🚨 Pusat Tanggap Darurat</h3><p class="text-xs text-red-100">Pantau bencana, pilih respons, dan pulihkan masyarakat.</p></div>
+        <button onclick="closeModal('disasterModal')" class="w-9 h-9 rounded-xl bg-white/15">✕</button>
+      </div>
+      <div id="disasterContent" class="p-4 sm:p-5 overflow-y-auto custom-scroll space-y-3"></div>
+    </div>
+  </div>
   <div id="dialogueModal" class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 sm:p-6">
     <div class="w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-emerald-100 overflow-hidden transform transition-all">
       <!-- NPC / Building Header -->
@@ -573,6 +583,8 @@
       fundraiseCooldownDay: 0,
       communityCampaignCooldownDay: 0,
       weather: 'Cerah',
+      activeDisasters: [],
+      disasterHistory: [],
       player: {
         x: 620,
         y: 520,
@@ -1844,6 +1856,64 @@
       processNextPeriod();
     }
 
+    const DISASTER_EVENTS = {
+      earthquake: { title:'Gempa Bumi', icon:'🌎', severity:'Darurat', location:'Kawasan Permukiman Timur', x:4750, y:900, description:'Gempa merusak beberapa rumah, memutus akses jalan, dan membuat keluarga membutuhkan tempat aman.', damage:'Rumah retak, puing bangunan, dan warga mengungsi.', emergencyCost:1800000, recoveryCost:4200000, people:95, impact:22 },
+      landslide: { title:'Tanah Longsor', icon:'⛰️', severity:'Siaga Tinggi', location:'Perbukitan Selatan', x:4750, y:2750, description:'Hujan deras memicu longsor yang menutup jalan dan mengancam rumah di lereng.', damage:'Material tanah menutup jalan dan merusak halaman rumah.', emergencyCost:1400000, recoveryCost:3600000, people:70, impact:18 },
+      house_damage: { title:'Permukiman Rusak', icon:'🏚️', severity:'Darurat Kemanusiaan', location:'Kampung Harapan', x:4250, y:1700, description:'Sejumlah rumah warga rusak akibat cuaca ekstrem. Keluarga membutuhkan terpal, bahan bangunan, dan tempat tinggal sementara.', damage:'Atap terlepas, dinding retak, dan perabot rusak.', emergencyCost:1100000, recoveryCost:3000000, people:55, impact:16 },
+      wildfire: { title:'Kebakaran Hutan dan Lahan', icon:'🔥', severity:'Darurat Ekologi', location:'Kawasan Hijau Utara', x:4750, y:300, description:'Kebakaran lahan menyebarkan asap dan mengancam permukiman serta kesehatan warga.', damage:'Vegetasi terbakar, kualitas udara menurun, dan warga rentan ISPA.', emergencyCost:1600000, recoveryCost:3900000, people:110, impact:20 },
+      flood: { title:'Banjir', icon:'🌊', severity:'Siaga Tinggi', location:'Dataran Rendah Timur', x:4250, y:2250, description:'Luapan air merendam rumah dan fasilitas umum. Warga membutuhkan evakuasi, air bersih, dan logistik.', damage:'Jalan tergenang, rumah kemasukan air, dan aktivitas warga terganggu.', emergencyCost:1700000, recoveryCost:4100000, people:125, impact:21 }
+    };
+
+    function spawnScheduledDisaster() {
+      const schedule = { 3:'earthquake', 5:'house_damage', 7:'wildfire', 9:'landslide', 11:'flood' };
+      const type = schedule[state.day];
+      if (!type || (state.activeDisasters || []).some(d => d.type === type)) return null;
+      const event = { id:'disaster_'+type+'_'+state.day, type, day:state.day, status:'active', ...DISASTER_EVENTS[type] };
+      state.activeDisasters = state.activeDisasters || [];
+      state.activeDisasters.push(event);
+      state.weather = type === 'wildfire' ? '🌫️ Kabut Asap • Darurat Karhutla' : type === 'flood' ? '🌧️ Hujan Lebat • Banjir' : '⚠️ Kondisi Darurat • '+event.title;
+      return event;
+    }
+
+    function openDisasterCenter() {
+      state.activeDisasters = state.activeDisasters || [];
+      const content = document.getElementById('disasterContent');
+      if (!state.activeDisasters.length) {
+        content.innerHTML = '<div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-5 text-center"><div class="text-3xl mb-2">🌤️</div><strong class="text-emerald-900">Tidak ada bencana aktif</strong><p class="text-sm text-emerald-800 mt-1">Tetap siaga. Peristiwa darurat dapat muncul saat hari berganti.</p></div>';
+      } else {
+        content.innerHTML = state.activeDisasters.map(d => `
+          <article class="border border-red-200 rounded-2xl p-4 bg-red-50/70">
+            <div class="flex items-start justify-between gap-3"><div><div class="text-xs font-extrabold text-red-700 uppercase">${d.severity} • Hari ${d.day}</div><h4 class="text-lg font-extrabold text-slate-900">${d.icon} ${d.title}</h4><p class="text-xs font-semibold text-slate-500">${d.location}</p></div><span class="text-xs bg-red-600 text-white rounded-lg px-2 py-1">AKTIF</span></div>
+            <p class="text-sm text-slate-700 mt-3">${d.description}</p><p class="text-xs text-slate-500 mt-1">Dampak lapangan: ${d.damage}</p>
+            <div class="grid sm:grid-cols-2 gap-2 mt-4">
+              <button onclick="respondToDisaster('${d.id}','emergency')" class="rounded-xl bg-amber-500 hover:bg-amber-600 text-white p-3 text-left"><strong class="block text-sm">🚑 Respons darurat</strong><span class="text-xs">Biaya ${formatRupiah(d.emergencyCost)} • bantuan cepat dan evakuasi</span></button>
+              <button onclick="respondToDisaster('${d.id}','recovery')" class="rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white p-3 text-left"><strong class="block text-sm">🏗️ Pemulihan menyeluruh</strong><span class="text-xs">Biaya ${formatRupiah(d.recoveryCost)} • rehabilitasi dan pemulihan</span></button>
+            </div>
+          </article>`).join('');
+      }
+      openModal('disasterModal');
+    }
+
+    function respondToDisaster(id, mode) {
+      const event = (state.activeDisasters || []).find(d => d.id === id);
+      if (!event) return;
+      const cost = mode === 'emergency' ? event.emergencyCost : event.recoveryCost;
+      if (state.funds < cost) { showToast('Dana lembaga belum mencukupi untuk respons ini.', 'warning'); return; }
+      state.funds -= cost;
+      const impact = mode === 'emergency' ? Math.max(5,Math.round(event.impact*0.55)) : event.impact;
+      const people = mode === 'emergency' ? Math.round(event.people*0.6) : event.people;
+      state.totalImpact += impact;
+      state.beneficiaries += people;
+      state.reputation = Math.min(100,state.reputation+(mode === 'emergency'?2:5));
+      state.activeDisasters = state.activeDisasters.filter(d => d.id !== id);
+      state.disasterHistory = state.disasterHistory || [];
+      state.disasterHistory.unshift({day:state.day,title:event.title,mode,cost,impact,people});
+      if (state.activeDisasters.length === 0 && !state.quests.some(q=>q.isCrisis && q.status==='available')) state.weather='☀️ Cerah • Kondusif';
+      updateHUD(); autoSaveGame();
+      showToast(mode==='emergency'?'Respons darurat disalurkan. Dampak awal berhasil dikurangi.':'Pemulihan menyeluruh selesai. Wilayah mulai pulih.','success');
+      openDisasterCenter();
+    }
+
     function processNextPeriod() {
       const prevDay = state.day;
       state.day += 1;
@@ -1905,7 +1975,11 @@
         reportLogs.push(`🚨 <strong>Peringatan Krisis Tertunda:</strong> ${unaddressedCrises.length} krisis belum ditangani. Kepercayaan masyarakat turun <strong>-${repLoss}%</strong>.`);
       }
 
-      // 4. Unlock dynamic evolving challenges based on Day
+      // 4. Schedule additional disaster scenarios across the region.
+      const newDisaster = spawnScheduledDisaster();
+      if (newDisaster) reportLogs.push(`🚨 <strong>Bencana Baru: ${newDisaster.icon} ${newDisaster.title}</strong> di ${newDisaster.location}. Buka Pusat Tanggap Darurat untuk menentukan respons lembaga.`);
+
+      // 5. Unlock dynamic evolving challenges based on Day
       let newChallengeUnlocked = null;
       state.quests.forEach(q => {
         if (q.status === 'locked' && state.day >= q.unlockedDay) {
@@ -2196,6 +2270,8 @@
       document.getElementById('badgeActivePrograms').innerText = state.activePrograms.length;
       const availCount = state.quests.filter(q => q.status === 'available').length;
       document.getElementById('badgeAvailableQuests').innerText = availCount;
+      const disasterBadge = document.getElementById('badgeDisasters');
+      if (disasterBadge) disasterBadge.innerText = (state.activeDisasters || []).length;
 
       // Crisis banner check
       const activeCrisis = state.quests.find(q => q.isCrisis && q.status === 'available');
@@ -2662,10 +2738,44 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       ctx.fillText(state.worldFlags.waterRestored ? 'AIR BERSIH' : 'SUMUR KERING', waterWell.x, waterWell.y + 42);
       ctx.restore();
 
+      // Disaster scenes change the visible landscape while events remain active.
+      (state.activeDisasters || []).forEach(d => drawDisasterScene(ctx,d));
+
       // Perimeter wooden fence
       ctx.strokeStyle = '#92400e';
       ctx.lineWidth = 6;
       ctx.strokeRect(55, 75, WORLD_WIDTH - 110, WORLD_HEIGHT - 135);
+    }
+
+    function drawDisasterScene(ctx,d) {
+      ctx.save(); const x=d.x,y=d.y;
+      if(d.type==='flood'){
+        ctx.fillStyle='rgba(14,165,233,0.68)';ctx.beginPath();ctx.ellipse(x,y+80,300,115,-0.08,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='rgba(224,242,254,0.9)';ctx.lineWidth=5;
+        for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x-220+i*22,y+45+i*30);ctx.quadraticCurveTo(x,y+20+i*30,x+220,y+45+i*30);ctx.stroke();}
+        ctx.fillStyle='#0c4a6e';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('AREA TERENDAM BANJIR',x,y-55);
+      } else if(d.type==='earthquake'){
+        ctx.fillStyle='rgba(120,53,15,0.18)';ctx.beginPath();ctx.ellipse(x,y+90,250,75,0,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#475569';ctx.lineWidth=7;
+        for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x-190+i*75,y+15);ctx.lineTo(x-155+i*75,y+70);ctx.lineTo(x-185+i*75,y+105);ctx.stroke();}
+        ctx.fillStyle='#991b1b';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('ZONA GEMPA • RUMAH RETAK',x,y-55);
+        for(let i=0;i<8;i++){ctx.fillStyle=i%2?'#94a3b8':'#a8a29e';ctx.fillRect(x-150+i*38,y+110+(i%3)*12,28,18);}
+      } else if(d.type==='wildfire'){
+        ctx.fillStyle='rgba(120,53,15,0.2)';ctx.beginPath();ctx.ellipse(x,y+90,270,80,0,0,Math.PI*2);ctx.fill();
+        for(let i=0;i<7;i++){const fx=x-180+i*58,fy=y+35+(i%3)*28;ctx.fillStyle='#7c2d12';ctx.fillRect(fx-5,fy,10,45);ctx.fillStyle=i%2?'#f97316':'#dc2626';ctx.beginPath();ctx.moveTo(fx-24,fy+8);ctx.quadraticCurveTo(fx-30,fy-35,fx,fy-52);ctx.quadraticCurveTo(fx+32,fy-20,fx+24,fy+8);ctx.fill();}
+        ctx.fillStyle='rgba(71,85,105,0.45)';for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(x-120+i*58,y-50-(i%2)*22,28,0,Math.PI*2);ctx.fill();}
+        ctx.fillStyle='#7f1d1d';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('KARHUTLA • KABUT ASAP',x,y-105);
+      } else if(d.type==='landslide'){
+        ctx.fillStyle='#92400e';ctx.beginPath();ctx.moveTo(x-260,y+100);ctx.quadraticCurveTo(x-120,y-100,x+20,y+15);ctx.quadraticCurveTo(x+130,y-60,x+270,y+100);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#a3a3a3';for(let i=0;i<12;i++){ctx.beginPath();ctx.arc(x-190+i*34,y+75+(i%3)*14,12+(i%3)*4,0,Math.PI*2);ctx.fill();}
+        ctx.fillStyle='#78350f';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('LONGSOR • AKSES TERPUTUS',x,y-125);
+      } else if(d.type==='house_damage'){
+        ctx.fillStyle='rgba(120,53,15,0.2)';ctx.beginPath();ctx.ellipse(x,y+100,180,55,0,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#ffedd5';ctx.fillRect(x-100,y+5,200,100);ctx.fillStyle='#9a3412';ctx.beginPath();ctx.moveTo(x-120,y+10);ctx.lineTo(x-15,y-60);ctx.lineTo(x+110,y+12);ctx.fill();
+        ctx.strokeStyle='#7f1d1d';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(x-10,y-50);ctx.lineTo(x+5,y-5);ctx.lineTo(x-20,y+30);ctx.stroke();
+        ctx.fillStyle='#991b1b';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('RUMAH WARGA RUSAK',x,y-85);
+      }
+      ctx.restore();
     }
 
     let lastTimestamp = 0;
