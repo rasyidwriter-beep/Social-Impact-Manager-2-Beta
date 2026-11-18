@@ -553,8 +553,8 @@
      * MODULE 2: GAME STATE & INITIAL DATA (ECONOMY, QUESTS, WORLD STATE)
      * =========================================================================
      */
-    const WORLD_WIDTH = 3600;
-    const WORLD_HEIGHT = 2600;
+    const WORLD_WIDTH = 5200;
+    const WORLD_HEIGHT = 3600;
 
     let selectedCharGender = 'male';
     let gameRunning = false;
@@ -961,7 +961,15 @@
       { id: 'b_shelter', name: 'Posko Tanggap Bencana', subtitle: 'Koordinasi relawan dan logistik darurat', x: 2350, y: 1120, w: 280, h: 175, doorX: 2490, doorY: 1305, roofColor: '#b91c1c', wallColor: '#fff1f2', trimColor: '#fb7185', type: 'clinic' },
       { id: 'b_library', name: 'Rumah Baca Komunitas', subtitle: 'Literasi, belajar bersama, dan akses pengetahuan', x: 2920, y: 1120, w: 260, h: 175, doorX: 3050, doorY: 1305, roofColor: '#6d28d9', wallColor: '#f5f3ff', trimColor: '#a78bfa', type: 'school' },
       { id: 'b_coop', name: 'Koperasi Maslahat', subtitle: 'Layanan keuangan dan penguatan usaha warga', x: 2320, y: 1940, w: 280, h: 170, doorX: 2460, doorY: 2120, roofColor: '#047857', wallColor: '#ecfdf5', trimColor: '#34d399', type: 'hall' },
-      { id: 'b_green', name: 'Pusat Lingkungan Lestari', subtitle: 'Bank sampah, penghijauan, dan edukasi lingkungan', x: 2920, y: 1940, w: 280, h: 170, doorX: 3060, doorY: 2120, roofColor: '#166534', wallColor: '#f0fdf4', trimColor: '#86efac', type: 'hall' }
+      { id: 'b_green', name: 'Pusat Lingkungan Lestari', subtitle: 'Bank sampah, penghijauan, dan edukasi lingkungan', x: 2920, y: 1940, w: 280, h: 170, doorX: 3060, doorY: 2120, roofColor: '#166534', wallColor: '#f0fdf4', trimColor: '#86efac', type: 'hall' },
+      { id: 'b_fishery', name: 'Koperasi Nelayan Bahari', subtitle: 'Penguatan ekonomi pesisir dan rantai pasok hasil laut', x: 3850, y: 350, w: 300, h: 185, doorX: 4000, doorY: 545, roofColor: '#0369a1', wallColor: '#e0f2fe', trimColor: '#38bdf8', type: 'hall' },
+      { id: 'b_training2', name: 'Akademi Keterampilan Warga', subtitle: 'Pelatihan vokasi dan peningkatan kapasitas pemuda', x: 4520, y: 350, w: 300, h: 185, doorX: 4670, doorY: 545, roofColor: '#4338ca', wallColor: '#eef2ff', trimColor: '#818cf8', type: 'school' },
+      { id: 'b_shelter2', name: 'Rumah Aman Keluarga', subtitle: 'Layanan perlindungan keluarga dan pendampingan', x: 3850, y: 1240, w: 300, h: 185, doorX: 4000, doorY: 1435, roofColor: '#be123c', wallColor: '#fff1f2', trimColor: '#fb7185', type: 'clinic' },
+      { id: 'b_foodbank', name: 'Gudang Pangan Bersama', subtitle: 'Penyimpanan dan distribusi logistik komunitas', x: 4520, y: 1240, w: 300, h: 185, doorX: 4670, doorY: 1435, roofColor: '#a16207', wallColor: '#fefce8', trimColor: '#facc15', type: 'hall' },
+      { id: 'b_innovation', name: 'Inkubator Usaha Sosial', subtitle: 'Pendampingan bisnis sosial dan akses permodalan', x: 3850, y: 2220, w: 300, h: 185, doorX: 4000, doorY: 2415, roofColor: '#0f766e', wallColor: '#ccfbf1', trimColor: '#5eead4', type: 'hall' },
+      { id: 'b_recycle', name: 'Bank Sampah Mandiri', subtitle: 'Pengelolaan sampah dan ekonomi sirkular', x: 4520, y: 2220, w: 300, h: 185, doorX: 4670, doorY: 2415, roofColor: '#15803d', wallColor: '#f0fdf4', trimColor: '#86efac', type: 'hall' },
+      { id: 'b_sport', name: 'Lapangan Pemuda', subtitle: 'Ruang kegiatan, olahraga, dan relawan komunitas', x: 3850, y: 3000, w: 300, h: 170, doorX: 4000, doorY: 3180, roofColor: '#166534', wallColor: '#dcfce7', trimColor: '#4ade80', type: 'hall' },
+      { id: 'b_women', name: 'Rumah Karya Perempuan', subtitle: 'Pemberdayaan keluarga dan usaha perempuan', x: 4520, y: 3000, w: 300, h: 170, doorX: 4670, doorY: 3180, roofColor: '#9d174d', wallColor: '#fce7f3', trimColor: '#f9a8d4', type: 'hall' }
     ];
 
     // Interactive Water Well in residential area
@@ -980,6 +988,11 @@
       { x: 2180, y: 760, r: 36 }, { x: 2760, y: 820, r: 40 }, { x: 3350, y: 900, r: 36 },
       { x: 2180, y: 1510, r: 38 }, { x: 2750, y: 1600, r: 34 }, { x: 3370, y: 1700, r: 42 },
       { x: 2180, y: 2260, r: 40 }, { x: 2780, y: 2330, r: 36 }, { x: 3370, y: 2360, r: 40 },
+      { x: 3650, y: 180, r: 38 }, { x: 4250, y: 190, r: 42 }, { x: 4950, y: 220, r: 38 },
+      { x: 3650, y: 850, r: 36 }, { x: 4250, y: 900, r: 40 }, { x: 4950, y: 900, r: 36 },
+      { x: 3650, y: 1750, r: 40 }, { x: 4250, y: 1800, r: 34 }, { x: 4950, y: 1800, r: 42 },
+      { x: 3650, y: 2700, r: 38 }, { x: 4250, y: 2780, r: 42 }, { x: 4950, y: 2800, r: 38 },
+      { x: 3500, y: 3300, r: 34 }, { x: 5050, y: 3350, r: 40 },
       { x: 840, y: 220, r: 35 }, { x: 890, y: 340, r: 30 }, { x: 1420, y: 240, r: 36 },
       { x: 1960, y: 250, r: 40 }, { x: 2010, y: 520, r: 34 }, { x: 1980, y: 780, r: 38 },
       { x: 1950, y: 1150, r: 36 }, { x: 1410, y: 1150, r: 34 }, { x: 1350, y: 1380, r: 40 },
@@ -1071,7 +1084,13 @@
       { id: 'npc_bima', name: 'Bima', role: 'Koordinator Relawan Bencana', avatar: '🦺', x: 2490, y: 1390, dir: 'down', shirtColor: '#dc2626', gender: 'male' },
       { id: 'npc_aisyah', name: 'Aisyah', role: 'Pengelola Rumah Baca', avatar: '📚', x: 3050, y: 1390, dir: 'down', shirtColor: '#9333ea', hijabColor: '#f3e8ff', gender: 'female' },
       { id: 'npc_rudi', name: 'Pak Rudi', role: 'Pengurus Koperasi Maslahat', avatar: '🤝', x: 2460, y: 2200, dir: 'down', shirtColor: '#047857', gender: 'male' },
-      { id: 'npc_salma', name: 'Salma', role: 'Relawan Lingkungan', avatar: '🌱', x: 3060, y: 2200, dir: 'down', shirtColor: '#15803d', hijabColor: '#dcfce7', gender: 'female' }
+      { id: 'npc_salma', name: 'Salma', role: 'Relawan Lingkungan', avatar: '🌱', x: 3060, y: 2200, dir: 'down', shirtColor: '#15803d', hijabColor: '#dcfce7', gender: 'female' },
+      { id: 'npc_fikri', name: 'Fikri', role: 'Koordinator Koperasi Nelayan', avatar: '⚓', x: 4000, y: 630, dir: 'down', shirtColor: '#0369a1', gender: 'male', isGuide: true, guideText: 'Nelayan kecil membutuhkan akses penyimpanan dingin, alat keselamatan, dan pemasaran hasil tangkapan yang lebih adil.', guideAction: 'programs' },
+      { id: 'npc_maya', name: 'Maya', role: 'Pendamping Pemuda dan Vokasi', avatar: '👩‍🏫', x: 4670, y: 630, dir: 'down', shirtColor: '#4338ca', hijabColor: '#e0e7ff', gender: 'female', isGuide: true, guideText: 'Banyak pemuda ingin bekerja, tetapi membutuhkan keterampilan praktis, sertifikasi, dan akses ke dunia usaha.', guideAction: 'quests' },
+      { id: 'npc_hana', name: 'Hana', role: 'Pendamping Perlindungan Keluarga', avatar: '🧕', x: 4000, y: 1520, dir: 'down', shirtColor: '#be123c', hijabColor: '#ffe4e6', gender: 'female', isGuide: true, guideText: 'Keluarga rentan membutuhkan pendampingan yang aman, akses layanan dasar, dan rujukan yang tepat.', guideAction: 'programs' },
+      { id: 'npc_aziz', name: 'Aziz', role: 'Pengelola Gudang Pangan', avatar: '📦', x: 4670, y: 1520, dir: 'down', shirtColor: '#a16207', gender: 'male', isGuide: true, guideText: 'Persediaan pangan perlu dicatat, disimpan, dan disalurkan berdasarkan kebutuhan warga agar bantuan tepat sasaran.', guideAction: 'overview' },
+      { id: 'npc_raka', name: 'Raka', role: 'Penggerak Usaha Sosial', avatar: '💡', x: 4000, y: 2500, dir: 'down', shirtColor: '#0f766e', gender: 'male', isGuide: true, guideText: 'Usaha sosial dapat menciptakan pendapatan sekaligus menyelesaikan persoalan masyarakat jika model bisnisnya sehat.', guideAction: 'fundraising' },
+      { id: 'npc_nisa', name: 'Nisa', role: 'Fasilitator Pemberdayaan Perempuan', avatar: '🌸', x: 4670, y: 2500, dir: 'down', shirtColor: '#9d174d', hijabColor: '#fce7f3', gender: 'female', isGuide: true, guideText: 'Perempuan pelaku usaha perlu akses pelatihan, jejaring pasar, pendampingan, dan dukungan keluarga.', guideAction: 'quests' }
     ];
 
     /**
@@ -1523,6 +1542,16 @@
           <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm">
             Terima kasih, Ustadz
           </button>
+        `;
+        openModal('dialogueModal');
+        return;
+      }
+
+      if (npc.isGuide) {
+        dlgText.innerHTML = `<p>${npc.guideText}</p><p class="mt-2 text-xs text-slate-500">Wilayah ini membutuhkan kolaborasi warga, relawan, mitra, dan lembaga sosial.</p>`;
+        actions.innerHTML = `
+          <button onclick="closeModal('dialogueModal'); openDashboardModal('${npc.guideAction}')" class="px-4 py-2.5 rounded-xl bg-emerald-700 text-white font-bold text-xs sm:text-sm">📋 Buka pengelolaan program</button>
+          <button onclick="closeModal('dialogueModal')" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm">Terima kasih</button>
         `;
         openModal('dialogueModal');
         return;
@@ -2553,6 +2582,37 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       ctx.fillText('KAWASAN PENDIDIKAN & KEMANUSIAAN', 2780, 1050);
       ctx.fillText('KAWASAN KOPERASI & LINGKUNGAN', 2780, 1870);
       ctx.restore();
+
+      // Extended east-side roads connecting the new coastal and social-enterprise districts
+      ctx.beginPath(); ctx.roundRect(3450, 560, 1600, 88, 18); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(3500, 430, 88, 2800, 18); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(3450, 1450, 1600, 82, 18); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(3450, 2420, 1600, 82, 18); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.roundRect(3450, 3200, 1600, 82, 18); ctx.fill(); ctx.stroke();
+      ctx.fillRect(3975, 535, 50, 35); ctx.fillRect(4645, 525, 50, 45);
+      ctx.fillRect(3975, 1420, 50, 35); ctx.fillRect(4645, 1420, 50, 35);
+      ctx.fillRect(3975, 2400, 50, 35); ctx.fillRect(4645, 2400, 50, 35);
+      ctx.fillRect(3975, 3160, 50, 40); ctx.fillRect(4645, 3160, 50, 40);
+
+      ctx.save();
+      ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
+      ctx.fillText('KAWASAN PESISIR & KETERAMPILAN', 4300, 280);
+      ctx.fillText('KAWASAN PERLINDUNGAN & LOGISTIK', 4300, 1110);
+      ctx.fillText('KAWASAN USAHA SOSIAL & DAUR ULANG', 4300, 2070);
+      ctx.fillText('KAWASAN PEMUDA & PEMBERDAYAAN', 4300, 2860);
+      ctx.restore();
+
+      // Community park and retention pond in the new southern district
+      ctx.fillStyle = '#bbf7d0';
+      ctx.beginPath(); ctx.roundRect(3650, 2670, 700, 300, 48); ctx.fill();
+      ctx.fillStyle = '#38bdf8';
+      ctx.beginPath(); ctx.ellipse(4000, 2820, 155, 78, -0.12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#166534';
+      ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('TAMAN KOMUNITAS', 4000, 2730);
 
       // Central Village Plaza / Taman Maslahat
       ctx.fillStyle = '#fef3c7';
