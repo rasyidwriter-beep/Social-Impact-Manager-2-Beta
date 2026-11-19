@@ -1230,13 +1230,16 @@
         ctx.fillRect(leg1X, 17.5, 6.5, 3);
       }
 
-      // Torso (proportional human shoulders & chest, not oversized head)
+      // Torso: shaded fabric, shoulder seam and subtle garment depth.
       ctx.translate(0, -bob);
-      ctx.fillStyle = shirtColor;
+      const shirtGradient=ctx.createLinearGradient(-10,-10,10,9);
+      shirtGradient.addColorStop(0,'rgba(255,255,255,.34)'); shirtGradient.addColorStop(.22,shirtColor); shirtGradient.addColorStop(.82,shirtColor); shirtGradient.addColorStop(1,'rgba(15,23,42,.32)');
+      ctx.fillStyle=shirtGradient;
       if (dir === 'down' || dir === 'up') {
         ctx.beginPath();
         ctx.roundRect(-9.5, -10, 19, 18, 5);
         ctx.fill();
+        ctx.strokeStyle='rgba(15,23,42,.2)'; ctx.lineWidth=.8; ctx.stroke();
 
         // Professional vest / lanyard detail for front view
         if (dir === 'down') {
@@ -1322,8 +1325,10 @@
         ctx.fill();
       }
 
-      // Face / Head base
-      ctx.fillStyle = skinColor;
+      // Face base with soft natural shading.
+      const faceGradient=ctx.createLinearGradient(-6,headY-6,7,headY+7);
+      faceGradient.addColorStop(0,'#fff1df'); faceGradient.addColorStop(.34,skinColor); faceGradient.addColorStop(1,'rgba(120,53,15,.28)');
+      ctx.fillStyle=faceGradient;
       ctx.beginPath();
       if (gender === 'female') {
         ctx.arc(dir === 'left' ? -1.5 : dir === 'right' ? 1.5 : 0, headY, 6.2, 0, Math.PI * 2);
@@ -2605,11 +2610,11 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Roof
-      ctx.fillStyle = b.roofColor;
-      ctx.beginPath();
-      ctx.roundRect(b.x - 6, b.y, b.w + 12, 54, 14);
-      ctx.fill();
+      // Roof with soft material gradient and highlight edge.
+      const roofGradient=ctx.createLinearGradient(b.x,b.y,b.x,b.y+58);
+      roofGradient.addColorStop(0,b.trimColor||'#f8fafc'); roofGradient.addColorStop(.22,b.roofColor); roofGradient.addColorStop(1,b.roofColor);
+      ctx.fillStyle=roofGradient; ctx.beginPath(); ctx.roundRect(b.x-7,b.y-2,b.w+14,58,14); ctx.fill();
+      ctx.strokeStyle='rgba(15,23,42,.18)'; ctx.lineWidth=1.5; ctx.stroke();
 
       // Roof highlight stripe
       ctx.fillStyle = b.trimColor;
@@ -2695,48 +2700,35 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
 
     function drawTree(ctx, t) {
       ctx.save();
-      // Shadow
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.18)';
-      ctx.beginPath();
-      ctx.ellipse(t.x + 6, t.y + 22, t.r * 0.85, t.r * 0.4, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Trunk
-      ctx.fillStyle = '#78350f';
-      ctx.fillRect(t.x - 6, t.y, 12, 22);
-
-      // Layered foliage
-      ctx.fillStyle = '#15803d';
-      ctx.beginPath();
-      ctx.arc(t.x, t.y - 8, t.r, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#22c55e';
-      ctx.beginPath();
-      ctx.arc(t.x - 6, t.y - 14, t.r * 0.72, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle='rgba(15,23,42,.2)'; ctx.beginPath(); ctx.ellipse(t.x+7,t.y+23,t.r*.95,t.r*.38,0,0,Math.PI*2); ctx.fill();
+      const trunk=ctx.createLinearGradient(t.x-6,0,t.x+7,0); trunk.addColorStop(0,'#713f12'); trunk.addColorStop(.5,'#a16207'); trunk.addColorStop(1,'#78350f');
+      ctx.fillStyle=trunk; ctx.beginPath(); ctx.roundRect(t.x-6,t.y-1,13,27,4); ctx.fill();
+      const canopy=ctx.createRadialGradient(t.x-t.r*.28,t.y-t.r*.7,2,t.x,t.y-8,t.r*1.2);
+      canopy.addColorStop(0,'#86efac'); canopy.addColorStop(.48,'#22c55e'); canopy.addColorStop(1,'#166534');
+      ctx.fillStyle=canopy; ctx.beginPath(); ctx.arc(t.x,t.y-8,t.r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(187,247,208,.48)'; ctx.beginPath(); ctx.arc(t.x-t.r*.28,t.y-t.r*.58,t.r*.42,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(20,83,45,.28)'; ctx.beginPath(); ctx.arc(t.x+t.r*.35,t.y-2,t.r*.43,0,Math.PI*2); ctx.fill();
       ctx.restore();
     }
 
     function drawWorldEnvironment(ctx) {
-      // Base lush grass field
-      ctx.fillStyle = '#65a35a';
-      ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+      // Rich layered terrain base with deterministic grass texture.
+      const grass=ctx.createLinearGradient(0,0,WORLD_WIDTH,WORLD_HEIGHT);
+      grass.addColorStop(0,'#79b96a'); grass.addColorStop(.48,'#68a95d'); grass.addColorStop(1,'#4f9657');
+      ctx.fillStyle=grass; ctx.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);
+      for(let gy=28;gy<WORLD_HEIGHT;gy+=54){for(let gx=24;gx<WORLD_WIDTH;gx+=58){
+        const seed=Math.abs(Math.sin(gx*12.9898+gy*78.233)*43758.5453)%1;
+        const px=gx+seed*22,py=gy+(1-seed)*20;
+        ctx.fillStyle=seed>.52?'rgba(236,253,245,.12)':'rgba(20,83,45,.09)';
+        ctx.beginPath();ctx.ellipse(px,py,2.2+seed*1.8,1.1,seed*2,0,Math.PI*2);ctx.fill();
+        if(seed>.88){ctx.strokeStyle='rgba(22,101,52,.22)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,py+2);ctx.lineTo(px-2,py-3);ctx.moveTo(px,py+2);ctx.lineTo(px+2,py-2);ctx.stroke();}
+      }}
 
-      // Subtle grass grid texture
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
-      for (let gx = 0; gx < WORLD_WIDTH; gx += 80) {
-        for (let gy = 0; gy < WORLD_HEIGHT; gy += 80) {
-          if ((gx + gy) % 160 === 0) {
-            ctx.fillRect(gx, gy, 80, 80);
-          }
-        }
-      }
-
-      // Village Roads (Clean paved stone/earth paths connecting all buildings)
-      ctx.fillStyle = '#e2e8f0';
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 4;
+      // Road shoulders beneath paved roads add depth and natural borders.
+      ctx.fillStyle='#b7a98d'; ctx.strokeStyle='#a89576'; ctx.lineWidth=2;
+      const roadRects=[[280,560,1520,95,20],[840,420,95,860,20],[380,1140,1340,80,20],[2050,560,1450,88,18],[2050,430,88,1850,18],[2050,1380,1450,82,18],[2050,2180,1450,82,18],[3450,560,1600,88,18],[3500,430,88,2800,18],[3450,1450,1600,82,18],[3450,2420,1600,82,18],[3450,3200,1600,82,18]];
+      roadRects.forEach(([x,y,w,h,r])=>{ctx.beginPath();ctx.roundRect(x-5,y-5,w+10,h+10,r+4);ctx.fill();});
+      ctx.fillStyle='#d8d2c4'; ctx.strokeStyle='#c4bdae'; ctx.lineWidth=2;
 
       // Main East-West Avenue
       ctx.beginPath();
