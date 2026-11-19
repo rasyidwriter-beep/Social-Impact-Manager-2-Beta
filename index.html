@@ -3055,6 +3055,49 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     let cameraY = 0;
     let cameraReady = false;
 
+    // Ambient world animation: subtle water shimmer, drifting motes, rain and soft lighting.
+    let worldVisualTime = 0;
+    function drawWorldAtmosphere(ctx, camX, camY, dt) {
+      worldVisualTime += Math.min(dt, 0.05);
+      const t = worldVisualTime;
+      const left = camX, top = camY;
+      ctx.save();
+      // A soft moving daylight bloom keeps the scene from feeling flat.
+      const bloom = ctx.createRadialGradient(left + 150, top + 90, 30, left + 150, top + 90, 620);
+      bloom.addColorStop(0, 'rgba(255,249,196,.10)');
+      bloom.addColorStop(1, 'rgba(255,249,196,0)');
+      ctx.fillStyle = bloom;
+      ctx.fillRect(left, top, viewWidth, viewHeight);
+
+      // Floating pollen/fireflies in green spaces (deterministic, low-cost animation).
+      for (let n = 0; n < 26; n++) {
+        const x = left + ((n * 137.5 + t * (8 + n % 5)) % viewWidth);
+        const y = top + ((n * 83.7 + Math.sin(t * .7 + n) * 13 + viewHeight) % viewHeight);
+        const pulse = .25 + (Math.sin(t * 2.1 + n * 1.7) + 1) * .22;
+        ctx.fillStyle = 'rgba(254,240,138,' + pulse.toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(x, y, 1.2 + pulse * 1.4, 0, Math.PI * 2); ctx.fill();
+      }
+
+      if (state.weather.includes('Hujan')) {
+        ctx.strokeStyle = 'rgba(219,234,254,.38)';
+        ctx.lineWidth = 1.35;
+        for (let n = 0; n < 110; n++) {
+          const x = left + ((n * 71 + t * 260) % viewWidth);
+          const y = top + ((n * 113 + t * 520) % viewHeight);
+          ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 7, y + 18); ctx.stroke();
+        }
+        ctx.fillStyle = 'rgba(30,64,96,.07)';
+        ctx.fillRect(left, top, viewWidth, viewHeight);
+      } else if (state.weather.includes('Kabut Asap')) {
+        const haze = ctx.createLinearGradient(left, top, left + viewWidth, top + viewHeight);
+        haze.addColorStop(0, 'rgba(251,191,36,.08)');
+        haze.addColorStop(.5, 'rgba(180,83,9,.13)');
+        haze.addColorStop(1, 'rgba(120,53,15,.08)');
+        ctx.fillStyle = haze; ctx.fillRect(left, top, viewWidth, viewHeight);
+      }
+      ctx.restore();
+    }
+
     function render(dt = 1 / 60) {
       // Clear in physical pixels, then draw in CSS pixels for crisp high-DPI rendering.
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -3179,6 +3222,7 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
         ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
       }
 
+      drawWorldAtmosphere(ctx, camX, camY, dt);
       ctx.restore();
     }
 
