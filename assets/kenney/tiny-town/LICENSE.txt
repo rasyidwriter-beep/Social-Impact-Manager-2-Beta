@@ -1,5 +1,6 @@
-Kenney Tiny Town — CC0 1.0 Universal
-Source: https://kenney.nl/assets/tiny-town
+Kenney Tiny Town
 Author: Kenney
-License: https://creativecommons.org/publicdomain/zero/1.0/
-The atlas is included in this repository and used as in-game sprite artwork.
+Source: https://kenney.nl/assets/tiny-town
+License: CC0 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+This project includes the packed Tiny Town tile atlas for in-game rendering.

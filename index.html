@@ -2543,6 +2543,18 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     // TOP-DOWN WORLD RENDERER — rebuilt from the ground up.
     const worldToScreen = (x,y) => ({x,y});
     const visualAssets = {};
+    // Kenney Tiny Town CC0 atlas: packed 12x11 tiles, each 16x16 px.
+    const townAtlas = new Image();
+    townAtlas.onload = () => { visualAssets.townAtlas = townAtlas; };
+    townAtlas.onerror = () => console.warn('Tiny Town atlas failed to load');
+    townAtlas.src = 'assets/kenney/tiny-town/tilemap_packed.png';
+    const TILE = 16;
+    function blitTownTile(c,index,x,y,w,h){
+      const a=visualAssets.townAtlas;
+      if(!a || !a.complete || !a.naturalWidth) return false;
+      c.drawImage(a,(index%12)*TILE,Math.floor(index/12)*TILE,TILE,TILE,x,y,w,h);
+      return true;
+    }
     const visualAssetSources = {
       office:'assets/buildings/office.svg', mosque:'assets/buildings/mosque.svg',
       school:'assets/buildings/school.svg', clinic:'assets/buildings/clinic.svg',
@@ -2567,34 +2579,54 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       c.beginPath(); c.roundRect(x,y,w,h,r);
     }
     function drawBuilding(c,b){
-      const type=['office','mosque','school','clinic','hall','house'].includes(b.type)?b.type:'hall';
-      const img=visualAssets[type], x=b.x-18, y=b.y-24, w=b.w+36, h=b.h+48;
+      const x=b.x-18,y=b.y-24,w=b.w+36,h=b.h+48;
+      const a=visualAssets.townAtlas;
       c.save();
-      c.fillStyle='rgba(22,45,31,.24)'; roundedPath(c,x+12,y+18,w,h,22); c.fill();
-      c.fillStyle='#d8d2bd'; roundedPath(c,x-5,y-5,w+10,h+10,18); c.fill();
-      c.fillStyle='#a7a18e'; roundedPath(c,x,y,w,h,15); c.fill();
-      if(img&&img.complete&&img.naturalWidth) c.drawImage(img,x+3,y+3,w-6,h-6);
-      else {
-        c.fillStyle=b.roofColor||'#176b54'; roundedPath(c,x+7,y+7,w-14,h-14,12); c.fill();
-        c.strokeStyle='rgba(255,255,255,.34)'; c.lineWidth=3;
-        for(let k=1;k<5;k++){c.beginPath();c.moveTo(x+12,y+k*(h-20)/5);c.lineTo(x+w-12,y+k*(h-20)/5);c.stroke();}
+      // Ground shadow and paved entrance.
+      c.fillStyle='rgba(20,35,28,.28)';c.beginPath();c.ellipse(b.x+b.w/2,b.y+b.h-3,w*.48,17,0,0,Math.PI*2);c.fill();
+      c.fillStyle='#b8a98c';roundedPath(c,b.x+b.w/2-45,b.y+b.h-8,90,32,7);c.fill();
+      if(a&&a.complete&&a.naturalWidth){
+        c.imageSmoothingEnabled=false;
+        const roof=(b.type==='house'||b.type==='hall'||b.type==='clinic')?[52,53,54,55,64,65,66,67]:[48,49,50,51,60,61,62,63];
+        const wall=(b.type==='school'||b.type==='office')?[76,77,79,79]:[72,73,75,75];
+        const dx=x,dy=y+4,tw=w/4,th=(h-8)/3;
+        // Deep roof overhang, two rows of detailed roof tiles.
+        for(let row=0;row<2;row++)for(let col=0;col<4;col++){
+          blitTownTile(c,roof[row*4+col],dx+col*tw,dy+row*th,tw,th);
+        }
+        // Facade: textured wall tiles, framed windows and a central entrance.
+        for(let col=0;col<4;col++) blitTownTile(c,wall[col],dx+col*tw,dy+2*th,tw,th);
+        const doorIndex=b.type==='school'?89:85;
+        blitTownTile(c,doorIndex,dx+1.55*tw,dy+2*th+th*.18,tw*.9,th*.82);
+        // Clear windows and facade trim make every building readable at game scale.
+        c.fillStyle='rgba(176,225,235,.95)';
+        [[.28,.70],[2.9,.70]].forEach(([cx,cy])=>{
+          c.fillRect(dx+cx*tw,dy+cy*th,tw*.42,th*.38);
+          c.strokeStyle='#76533d';c.lineWidth=3;c.strokeRect(dx+cx*tw,dy+cy*th,tw*.42,th*.38);
+        });
+        if(b.type==='mosque'){
+          c.fillStyle='#d7b85c';c.beginPath();c.arc(b.x+b.w/2,dy+th*.32,Math.min(15,tw*.23),Math.PI,Math.PI*2);c.fill();
+          c.fillRect(b.x+b.w/2-2,dy-13,4,18);
+        }
+      }else{
+        // Fallback remains visible if the atlas has not loaded yet.
+        c.fillStyle=b.wallColor||'#e9dfc7';roundedPath(c,x,y,w,h,12);c.fill();
+        c.fillStyle=b.roofColor||'#176b54';roundedPath(c,x+5,y+5,w-10,h*.56,9);c.fill();
+        c.fillStyle='#76533d';c.fillRect(b.x+b.w/2-13,b.y+b.h-42,26,42);
+        c.fillStyle='#9ed6e4';c.fillRect(x+22,y+h*.68,25,22);c.fillRect(x+w-47,y+h*.68,25,22);
       }
-      // entrance apron, steps and signboard
-      c.fillStyle='#c6bda8'; roundedPath(c,b.x+b.w/2-35,b.y+b.h-3,70,24,5); c.fill();
-      c.fillStyle='#78563a'; roundedPath(c,b.x+b.w/2-16,b.y+b.h-20,32,22,5); c.fill();
-      c.fillStyle='rgba(18,43,34,.88)'; roundedPath(c,b.x+b.w/2-65,y-23,130,20,7); c.fill();
-      c.fillStyle='#fff'; c.font='700 11px "Plus Jakarta Sans",sans-serif'; c.textAlign='center';
-      c.fillText((b.name||'Fasilitas').length>22?(b.name||'').slice(0,20)+'…':b.name||'Fasilitas',b.x+b.w/2,y-9);
+      // Signboard stays outside the sprite and is legible.
+      c.fillStyle='rgba(20,44,35,.92)';roundedPath(c,b.x+b.w/2-67,y-22,134,20,6);c.fill();
+      c.fillStyle='#fff';c.font='700 10px "Plus Jakarta Sans",sans-serif';c.textAlign='center';
+      c.fillText((b.name||'Fasilitas').slice(0,23),b.x+b.w/2,y-8);
       c.restore();
     }
     function drawTree(c,t){
-      const x=t.x,y=t.y,r=(t.r||34)*1.45,img=visualAssets.tree;
-      c.save();
-      c.fillStyle='rgba(24,48,31,.22)'; c.beginPath(); c.ellipse(x+9,y+13,r*1.05,r*.82,0,0,Math.PI*2); c.fill();
-      if(img&&img.complete&&img.naturalWidth) c.drawImage(img,x-r*1.3,y-r*1.3,r*2.6,r*2.6);
-      else {
+      const x=t.x,y=t.y,r=(t.r||34)*1.45;
+      c.save();c.fillStyle='rgba(20,45,27,.28)';c.beginPath();c.ellipse(x+7,y+13,r*1.05,r*.72,0,0,Math.PI*2);c.fill();
+      if(!blitTownTile(c,5,x-r,y-r,r*2,r*2)){
         const g=c.createRadialGradient(x-r*.3,y-r*.35,3,x,y,r);
-        g.addColorStop(0,'#8bcf70');g.addColorStop(.55,'#39844b');g.addColorStop(1,'#205b3a');
+        g.addColorStop(0,'#a2dc78');g.addColorStop(.55,'#39844b');g.addColorStop(1,'#205b3a');
         c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
       }
       c.restore();
