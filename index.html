@@ -94,6 +94,16 @@
       color: white;
       transform: scale(0.92);
     }
+
+    /* VISUAL REDESIGN 2026: stronger editorial hierarchy and premium HUD surfaces */
+    #titleScreen{background:radial-gradient(ellipse at 15% 15%,rgba(52,211,153,.24),transparent 38%),radial-gradient(ellipse at 85% 85%,rgba(245,158,11,.16),transparent 34%),linear-gradient(135deg,#052e2b 0%,#064e3b 48%,#0f766e 100%)!important}
+    #titleScreen>div.relative{border-radius:30px!important;border:1px solid rgba(255,255,255,.72)!important;box-shadow:0 34px 90px rgba(2,20,18,.42)!important}
+    #titleScreen .bg-gradient-to-r{background:linear-gradient(115deg,#052e2b,#065f46 55%,#0f766e)!important}
+    #titleScreen h1{letter-spacing:-.055em!important;text-shadow:0 4px 22px rgba(0,0,0,.18)}
+    #titleScreen section{border-radius:22px!important;box-shadow:0 12px 30px rgba(6,78,59,.07)!important}
+    #titleScreen canvas{filter:drop-shadow(0 8px 5px rgba(15,23,42,.16))}
+    .glass-panel{background:rgba(250,255,252,.91)!important;border:1px solid rgba(255,255,255,.8)!important;box-shadow:0 14px 38px rgba(15,23,42,.16)!important}
+    .glass-dark{background:rgba(4,47,46,.92)!important;box-shadow:0 12px 30px rgba(2,20,18,.24)!important}
   </style>
 </head>
 <body class="relative w-screen h-screen overflow-hidden text-slate-800">
@@ -2614,153 +2624,89 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     resizeCanvas();
 
     function drawBuilding(ctx, b) {
-      ctx.save();
+  ctx.save();
+  const x=b.x,y=b.y,w=b.w,h=b.h;
+  const trim=b.trimColor||'#e7e5e4', wall=b.wallColor||'#e8e2d5';
+  // Architectural footprint, cast shadow and landscaped forecourt
+  ctx.fillStyle='rgba(15,23,42,.24)';ctx.beginPath();ctx.roundRect(x+14,y+22,w,h,18);ctx.fill();
+  ctx.fillStyle='#a8a29e';ctx.beginPath();ctx.roundRect(x-8,y+h-12,w+16,22,8);ctx.fill();
+  ctx.fillStyle='#d6d3d1';ctx.beginPath();ctx.roundRect(x-4,y+h-16,w+8,16,6);ctx.fill();
+  // Main walls with a warm, dimensional facade
+  const facade=ctx.createLinearGradient(x,y,x+w,y+h);
+  facade.addColorStop(0,'#fffdf7');facade.addColorStop(.18,wall);facade.addColorStop(1,'#cbd5c2');
+  ctx.fillStyle=facade;ctx.beginPath();ctx.roundRect(x,y+40,w,h-48,12);ctx.fill();
+  ctx.strokeStyle='rgba(71,85,65,.38)';ctx.lineWidth=2;ctx.stroke();
+  // Roof: broad overhang, fascia, and separate roof planes
+  ctx.fillStyle='rgba(15,23,42,.18)';ctx.beginPath();ctx.roundRect(x-12,y+28,w+24,24,8);ctx.fill();
+  const roof=ctx.createLinearGradient(x,y,x,y+54);
+  roof.addColorStop(0,trim);roof.addColorStop(.45,b.roofColor||'#64748b');roof.addColorStop(1,'#334155');
+  ctx.fillStyle=roof;ctx.beginPath();ctx.roundRect(x-10,y-7,w+20,58,13);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(x+5,y+1,w-10,4);
+  // Recessed upper clerestory band
+  ctx.fillStyle='rgba(15,23,42,.17)';ctx.fillRect(x+10,y+55,w-20,8);
+  // Windows in framed bays
+  const cols=Math.max(2,Math.floor(w/76)), gap=(w-36)/cols;
+  for(let row=0;row<2;row++) for(let c=0;c<cols;c++){
+    const wx=x+18+c*gap+7, wy=y+78+row*48;
+    if(wy+31>y+h-56)continue;
+    ctx.fillStyle='#475569';ctx.beginPath();ctx.roundRect(wx-3,wy-3,34,36,5);ctx.fill();
+    const glass=ctx.createLinearGradient(wx,wy,wx+28,wy+30);
+    glass.addColorStop(0,'#dbeafe');glass.addColorStop(.5,'#7dd3fc');glass.addColorStop(1,'#256d86');
+    ctx.fillStyle=glass;ctx.beginPath();ctx.roundRect(wx,wy,28,30,3);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(wx+14,wy);ctx.lineTo(wx+14,wy+30);ctx.moveTo(wx,wy+15);ctx.lineTo(wx+28,wy+15);ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(wx+3,wy+3,5,21);
+  }
+  // Distinct entrance and accessible steps
+  ctx.fillStyle='#64748b';ctx.beginPath();ctx.roundRect(x+w/2-25,y+h-62,50,62,[7,7,0,0]);ctx.fill();
+  ctx.fillStyle='#78350f';ctx.beginPath();ctx.roundRect(x+w/2-19,y+h-57,38,57,[5,5,0,0]);ctx.fill();
+  ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(x+w/2+12,y+h-28,3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#e7e5e4';ctx.beginPath();ctx.roundRect(x+w/2-31,y+h-5,62,10,3);ctx.fill();
+  // Building identity plaque
+  const title=b.name||'Fasilitas';
+  ctx.font='800 13px "Plus Jakarta Sans",sans-serif';
+  const tw=Math.min(w-12,ctx.measureText(title).width+28);
+  ctx.fillStyle='#123b35';ctx.beginPath();ctx.roundRect(x+w/2-tw/2,y+13,tw,27,8);ctx.fill();
+  ctx.fillStyle='#f8fafc';ctx.textAlign='center';ctx.fillText(title,x+w/2,y+31);
+  // Signature architecture per facility
+  if(b.type==='mosque'){
+    const cx=x+w/2;
+    ctx.fillStyle='#d6a72c';ctx.beginPath();ctx.ellipse(cx,y+7,Math.min(43,w*.2),30,0,Math.PI,0);ctx.fill();
+    ctx.strokeStyle='#fff1a8';ctx.lineWidth=3;ctx.stroke();
+    ctx.fillStyle='#f8d66d';ctx.fillRect(cx-2,y-31,4,14);
+    ctx.beginPath();ctx.arc(cx,y-34,5,0,Math.PI*2);ctx.fill();
+    for(const tx of [x+22,x+w-22]){ctx.fillStyle='#f5d77a';ctx.fillRect(tx-5,y-9,10,57);ctx.beginPath();ctx.moveTo(tx-9,y-9);ctx.lineTo(tx,y-25);ctx.lineTo(tx+9,y-9);ctx.fill();}
+  } else if(b.type==='clinic'){
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(x+w/2-20,y-1,40,40,8);ctx.fill();
+    ctx.fillStyle='#e11d48';ctx.fillRect(x+w/2-5,y+6,10,28);ctx.fillRect(x+w/2-14,y+15,28,10);
+  } else {
+    ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(x+8,y+65,w-16,4);
+  }
+  // Planters make public buildings feel grounded in the village
+  for(const px of [x+12,x+w-12]){ctx.fillStyle='#9a6b43';ctx.beginPath();ctx.roundRect(px-9,y+h-22,18,12,3);ctx.fill();ctx.fillStyle='#16a34a';ctx.beginPath();ctx.arc(px,y+h-26,9,0,Math.PI*2);ctx.fill();}
+  ctx.restore();
+}
 
-      // Drop shadow
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.2)';
-      ctx.beginPath();
-      ctx.roundRect(b.x + 8, b.y + 12, b.w, b.h, 14);
-      ctx.fill();
-
-      // Main building wall
-      ctx.fillStyle = b.wallColor;
-      ctx.beginPath();
-      ctx.roundRect(b.x, b.y + 38, b.w, b.h - 38, [0, 0, 12, 12]);
-      ctx.fill();
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Facade identity: material bands, corner pillars and subtle wall texture.
-      ctx.fillStyle='rgba(255,255,255,.34)';
-      ctx.fillRect(b.x+8,b.y+62,7,b.h-78);
-      ctx.fillStyle='rgba(15,23,42,.08)';
-      ctx.fillRect(b.x+b.w-13,b.y+62,5,b.h-78);
-      ctx.fillStyle=b.trimColor||'#e2e8f0';
-      ctx.fillRect(b.x+10,b.y+58,b.w-20,5);
-      // Repeated facade blocks make larger public buildings read as real structures.
-      for(let fy=b.y+116;fy<b.y+b.h-62;fy+=34){
-        ctx.fillStyle='rgba(255,255,255,.12)';
-        ctx.fillRect(b.x+12,fy,b.w-24,2);
-      }
-      // Roof with soft material gradient and highlight edge.
-      const roofGradient=ctx.createLinearGradient(b.x,b.y,b.x,b.y+58);
-      roofGradient.addColorStop(0,b.trimColor||'#f8fafc'); roofGradient.addColorStop(.22,b.roofColor); roofGradient.addColorStop(1,b.roofColor);
-      ctx.fillStyle=roofGradient; ctx.beginPath(); ctx.roundRect(b.x-7,b.y-2,b.w+14,58,14); ctx.fill();
-      ctx.strokeStyle='rgba(15,23,42,.18)'; ctx.lineWidth=1.5; ctx.stroke();
-
-      // Roof panel seams and fascia create a more dimensional roof silhouette.
-      ctx.save();
-      ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1;
-      for(let rx=b.x+22;rx<b.x+b.w-8;rx+=34){ctx.beginPath();ctx.moveTo(rx,b.y+8);ctx.lineTo(rx,b.y+39);ctx.stroke();}
-      ctx.fillStyle='rgba(15,23,42,.10)';ctx.fillRect(b.x+8,b.y+53,b.w-16,5);
-      ctx.restore();
-
-      // Roof highlight stripe
-      ctx.fillStyle = b.trimColor;
-      ctx.fillRect(b.x - 4, b.y + 46, b.w + 8, 6);
-
-      // Special architectural feature for Mosque (Golden Dome & Crescent)
-      if (b.type === 'mosque') {
-        const cx = b.x + b.w / 2;
-        ctx.fillStyle = '#eab308';
-        ctx.beginPath();
-        ctx.arc(cx, b.y + 8, 34, Math.PI, 0);
-        ctx.fill();
-        ctx.strokeStyle = '#fef08a';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        // Finial
-        ctx.fillRect(cx - 1.5, b.y - 34, 3, 12);
-        ctx.beginPath();
-        ctx.arc(cx, b.y - 36, 4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Special medical cross for Clinic
-      if (b.type === 'clinic') {
-        const cx = b.x + b.w / 2;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(cx, b.y + 24, 16, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#e11d48';
-        ctx.fillRect(cx - 3, b.y + 15, 6, 18);
-        ctx.fillRect(cx - 9, b.y + 21, 18, 6);
-      }
-
-      // Entrance canopy, framed door and doorstep.
-      ctx.fillStyle='rgba(15,23,42,.16)';ctx.beginPath();ctx.roundRect(b.x+b.w/2-24,b.y+b.h-48,48,49,5);ctx.fill();
-      ctx.fillStyle='#78350f';ctx.beginPath();ctx.roundRect(b.x+b.w/2-17,b.y+b.h-43,34,45,[5,5,0,0]);ctx.fill();
-      ctx.fillStyle='rgba(254,243,199,.7)';ctx.beginPath();ctx.arc(b.x+b.w/2+9,b.y+b.h-23,2.2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#cbd5e1';ctx.beginPath();ctx.roundRect(b.x+b.w/2-25,b.y+b.h-3,50,9,3);ctx.fill();
-
-      // Windows
-      ctx.fillStyle = '#bae6fd';
-      ctx.strokeStyle = '#64748b';
-      ctx.lineWidth = 2;
-      const winPositions = [b.x + 28, b.x + b.w - 64];
-      winPositions.forEach(wx => {
-        ctx.beginPath();
-        ctx.roundRect(wx, b.y + 74, 36, 32, 6);
-        ctx.fill();
-        ctx.stroke();
-        // Window crosspane
-        ctx.beginPath();
-        ctx.moveTo(wx + 18, b.y + 74);
-        ctx.lineTo(wx + 18, b.y + 106);
-        ctx.moveTo(wx, b.y + 90);
-        ctx.lineTo(wx + 36, b.y + 90);
-        ctx.stroke();
-      });
-
-      // Doorway
-      ctx.fillStyle = '#475569';
-      ctx.beginPath();
-      ctx.roundRect(b.doorX - 20, b.y + b.h - 54, 40, 54, [8, 8, 0, 0]);
-      ctx.fill();
-      ctx.fillStyle = '#fbbf24';
-      ctx.beginPath();
-      ctx.arc(b.doorX + 12, b.y + b.h - 26, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Door Mat / Interaction Zone pad
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.28)';
-      ctx.beginPath();
-      ctx.ellipse(b.doorX, b.doorY, 26, 12, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Building Name Signboard
-      ctx.font = '800 12px "Plus Jakarta Sans", sans-serif';
-      const labelW = ctx.measureText(b.name).width + 20;
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-      ctx.beginPath();
-      ctx.roundRect(b.x + b.w / 2 - labelW / 2, b.y + 12, labelW, 24, 8);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.fillText(b.name, b.x + b.w / 2, b.y + 28);
-
-      ctx.restore();
-    }
-
-    function drawTree(ctx, t) {
-      ctx.save();
-      ctx.fillStyle='rgba(15,23,42,.2)'; ctx.beginPath(); ctx.ellipse(t.x+7,t.y+23,t.r*.95,t.r*.38,0,0,Math.PI*2); ctx.fill();
-      const trunk=ctx.createLinearGradient(t.x-6,0,t.x+7,0); trunk.addColorStop(0,'#713f12'); trunk.addColorStop(.5,'#a16207'); trunk.addColorStop(1,'#78350f');
-      ctx.fillStyle=trunk; ctx.beginPath(); ctx.roundRect(t.x-6,t.y-1,13,27,4); ctx.fill();
-      // Layered crown silhouette and leaf clusters.
-      ctx.fillStyle='rgba(22,101,52,.45)';
-      [[-.52,-.34,.48],[.48,-.28,.5],[-.2,.22,.54],[.35,.18,.46]].forEach(([ox,oy,scale])=>{
-        ctx.beginPath();ctx.arc(t.x+ox*t.r,t.y-8+oy*t.r,t.r*scale,0,Math.PI*2);ctx.fill();
-      });
-      const canopy=ctx.createRadialGradient(t.x-t.r*.28,t.y-t.r*.7,2,t.x,t.y-8,t.r*1.2);
-      canopy.addColorStop(0,'#86efac'); canopy.addColorStop(.48,'#22c55e'); canopy.addColorStop(1,'#166534');
-      ctx.fillStyle=canopy; ctx.beginPath(); ctx.arc(t.x,t.y-8,t.r,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(187,247,208,.48)'; ctx.beginPath(); ctx.arc(t.x-t.r*.28,t.y-t.r*.58,t.r*.42,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(20,83,45,.28)'; ctx.beginPath(); ctx.arc(t.x+t.r*.35,t.y-2,t.r*.43,0,Math.PI*2); ctx.fill();
-      ctx.restore();
-    }
+    function drawTree(ctx,t){
+ ctx.save();const x=t.x,y=t.y,r=t.r||30;
+ // Soft contact shadow and sculpted trunk
+ ctx.fillStyle='rgba(15,23,42,.25)';ctx.beginPath();ctx.ellipse(x+8,y+24,r*.9,r*.34,-.12,0,Math.PI*2);ctx.fill();
+ const bark=ctx.createLinearGradient(x-8,0,x+9,0);bark.addColorStop(0,'#713f12');bark.addColorStop(.45,'#b77935');bark.addColorStop(1,'#5b3417');
+ ctx.fillStyle=bark;ctx.beginPath();ctx.roundRect(x-7,y-8,15,34,5);ctx.fill();
+ ctx.strokeStyle='rgba(255,220,160,.45)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-2,y-3);ctx.lineTo(x-2,y+20);ctx.stroke();
+ // Layered canopy clusters with varied highlights
+ const blobs=[[-.48,-.22,.58],[-.05,-.55,.58],[.43,-.28,.55],[-.38,.25,.52],[.16,.18,.62],[.55,.22,.42]];
+ for(let i=0;i<blobs.length;i++){const [ox,oy,sc]=blobs[i],cx=x+ox*r,cy=y-12+oy*r;
+  const g=ctx.createRadialGradient(cx-r*.16,cy-r*.2,1,cx,cy,r*sc);g.addColorStop(0,i%2?'#a7f3a0':'#bbf7a8');g.addColorStop(.42,i%2?'#4ade80':'#22c55e');g.addColorStop(1,'#166534');
+  ctx.fillStyle='rgba(20,83,45,.22)';ctx.beginPath();ctx.arc(cx+3,cy+5,r*sc,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r*sc,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='rgba(240,253,220,.24)';ctx.beginPath();ctx.ellipse(cx-r*.18,cy-r*.2,r*sc*.35,r*sc*.18,-.5,0,Math.PI*2);ctx.fill();
+ }
+ // Tiny fruit/flower accents
+ ctx.fillStyle='#facc15';for(let i=0;i<3;i++){const a=i*2.1+.4;ctx.beginPath();ctx.arc(x+Math.cos(a)*r*.48,y-12+Math.sin(a)*r*.35,2.2,0,Math.PI*2);ctx.fill();}
+ ctx.restore();
+}
 
     function drawWorldEnvironment(ctx) {
       // Rich layered terrain base with deterministic grass texture.
@@ -3128,7 +3074,39 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
 
     // Ambient world animation: subtle water shimmer, drifting motes, rain and soft lighting.
     let worldVisualTime = 0;
-    function drawWorldAtmosphere(ctx, camX, camY, dt) {
+    
+    function drawScenicWorldPass(ctx){
+  // Street design language: asphalt, painted lane dividers and pedestrian crossings
+  const roads=[[280,607,1520,0],[2050,604,1450,0],[3450,604,1600,0],[5450,604,1550,0],[380,1180,1340,0],[2050,1421,1450,0],[3450,1491,1600,0],[5450,1701,1550,0],[2050,2221,1450,0],[3450,2461,1600,0],[3450,3241,1600,0]];
+  ctx.save();
+  roads.forEach(([x,y,w])=>{ctx.strokeStyle='rgba(255,255,255,.76)';ctx.lineWidth=3;ctx.setLineDash([28,24]);ctx.beginPath();ctx.moveTo(x+24,y);ctx.lineTo(x+w-24,y);ctx.stroke();ctx.setLineDash([]);});
+  // Raised sidewalks and corner ramps along the central spine
+  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=4;
+  [[887,430,0,840],[2094,445,0,1800],[3544,445,0,2750],[5694,445,0,3700]].forEach(([x,y,,len])=>{ctx.setLineDash([18,12]);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+len);ctx.stroke();});
+  ctx.setLineDash([]);
+  // Crosswalks at major junctions
+  [[840,560],[2050,560],[3500,560],[5650,560],[2050,1380],[3500,1450]].forEach(([x,y])=>{
+    ctx.fillStyle='rgba(248,250,252,.82)';for(let k=0;k<7;k++)ctx.fillRect(x-38+k*12,y-7,7,26);
+  });
+  // Pocket parks: curved planting beds, paths and benches
+  const parks=[[1320,760,230,170],[2750,760,260,180],[4240,1770,280,210],[6200,900,300,210],[6100,2700,330,230]];
+  parks.forEach(([x,y,w,h],i)=>{
+    ctx.fillStyle='rgba(15,23,42,.13)';ctx.beginPath();ctx.ellipse(x+w/2,y+h/2+9,w/2,h/2,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#c8b99a';ctx.beginPath();ctx.roundRect(x,y,w,h,30);ctx.fill();
+    ctx.fillStyle=i%2?'#b9d69a':'#a8cf87';ctx.beginPath();ctx.roundRect(x+8,y+8,w-16,h-16,25);ctx.fill();
+    ctx.strokeStyle='#eadfc8';ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(x+24,y+h/2);ctx.lineTo(x+w-24,y+h/2);ctx.moveTo(x+w/2,y+20);ctx.lineTo(x+w/2,y+h-20);ctx.stroke();
+    for(let k=0;k<8;k++){const tx=x+30+(k%4)*(w-60)/3,ty=y+30+Math.floor(k/4)*(h-60);ctx.fillStyle='#166534';ctx.beginPath();ctx.arc(tx,ty,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4ade80';ctx.beginPath();ctx.arc(tx-4,ty-4,8,0,Math.PI*2);ctx.fill();}
+    // park benches
+    ctx.fillStyle='#8b5e34';ctx.fillRect(x+w/2-18,y+h-22,36,5);ctx.fillRect(x+w/2-18,y+h-29,36,4);
+  });
+  // Small civic square with fountain
+  ctx.fillStyle='#cbd5e1';ctx.beginPath();ctx.roundRect(950,1380,310,210,26);ctx.fill();
+  ctx.fillStyle='#7dd3fc';ctx.beginPath();ctx.ellipse(1105,1485,65,43,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='#e0f2fe';ctx.lineWidth=5;ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.arc(1105,1480,9,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+function drawWorldAtmosphere(ctx, camX, camY, dt) {
       worldVisualTime += Math.min(dt, 0.05);
       const t = worldVisualTime;
       const left = camX, top = camY;
@@ -3195,6 +3173,7 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
 
       // 1. Ground, Roads & Plaza
       drawWorldEnvironment(ctx);
+      drawScenicWorldPass(ctx);
 
       // 2. Depth-sorted entities (Buildings, Trees, NPCs, Player)
       const renderList = [];
