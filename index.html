@@ -2445,7 +2445,27 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return;
         const loaded = JSON.parse(raw);
-        state = { ...defaultGameState(), ...loaded };
+        const base = defaultGameState();
+        // Deep-merge nested objects: older save files may not contain the
+        // complete player/world schema required by the renderer.
+        state = {
+          ...base,
+          ...loaded,
+          avatar: { ...base.avatar, ...(loaded.avatar || {}) },
+          player: { ...base.player, ...(loaded.player || {}) },
+          worldFlags: { ...base.worldFlags, ...(loaded.worldFlags || {}) },
+          activeDisasters: Array.isArray(loaded.activeDisasters) ? loaded.activeDisasters : [],
+          disasterHistory: Array.isArray(loaded.disasterHistory) ? loaded.disasterHistory : [],
+          activePrograms: Array.isArray(loaded.activePrograms) ? loaded.activePrograms : [],
+          completedHistory: Array.isArray(loaded.completedHistory) ? loaded.completedHistory : [],
+          quests: Array.isArray(loaded.quests) && loaded.quests.length ? loaded.quests : base.quests
+        };
+        // Reject invalid coordinates from stale/corrupt saves before camera math.
+        if (!Number.isFinite(Number(state.player.x))) state.player.x = base.player.x;
+        if (!Number.isFinite(Number(state.player.y))) state.player.y = base.player.y;
+        state.player.x = Math.max(0, Math.min(WORLD_WIDTH - 40, Number(state.player.x)));
+        state.player.y = Math.max(0, Math.min(WORLD_HEIGHT - 60, Number(state.player.y)));
+        cameraReady = false;
         launchGameScreen();
         showToast(`Progres Hari ke-${state.day} berhasil dimuat!`, 'success');
       } catch (e) {
