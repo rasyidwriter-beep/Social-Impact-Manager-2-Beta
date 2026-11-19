@@ -2543,11 +2543,6 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     // TOP-DOWN WORLD RENDERER — rebuilt from the ground up.
     const worldToScreen = (x,y) => ({x,y});
     const visualAssets = {};
-    // Kenney Tiny Town CC0 sprite atlas: real, transparent PNG game artwork.
-    // Source: https://kenney.nl/assets/tiny-town (CC0 1.0)
-    const kenneyTownAtlas = new Image();
-    kenneyTownAtlas.onload = () => { visualAssets.kenneyTownAtlas = kenneyTownAtlas; };
-    kenneyTownAtlas.src = 'assets/kenney/tiny-town/tilemap.png';
     const visualAssetSources = {
       office:'assets/buildings/office.svg', mosque:'assets/buildings/mosque.svg',
       school:'assets/buildings/school.svg', clinic:'assets/buildings/clinic.svg',
@@ -2573,20 +2568,7 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     }
     function drawBuilding(c,b){
       const type=['office','mosque','school','clinic','hall','house'].includes(b.type)?b.type:'hall';
-      const img=visualAssets.kenneyTownAtlas, x=b.x-18, y=b.y-24, w=b.w+36, h=b.h+48;
-      if(img && img.complete && img.naturalWidth){
-        // Sprite regions from the CC0 Tiny Town atlas; draw crisp, native artwork.
-        const regions={office:[0,96,48,48],mosque:[48,96,48,48],school:[96,96,48,48],clinic:[0,48,48,48],hall:[48,48,48,48],house:[96,48,48,48]};
-        const [sx,sy,sw,sh]=regions[type]||regions.hall;
-        c.save();
-        c.imageSmoothingEnabled=false;
-        c.fillStyle='rgba(18,38,28,.22)';c.beginPath();c.ellipse(b.x+b.w/2,b.y+b.h-2,b.w*.48,12,0,0,Math.PI*2);c.fill();
-        c.drawImage(img,sx,sy,sw,sh,x,y,w,h);
-        c.fillStyle='rgba(18,43,34,.9)';roundedPath(c,b.x+b.w/2-61,y-22,122,19,6);c.fill();
-        c.fillStyle='#fff';c.font='700 10px "Plus Jakarta Sans",sans-serif';c.textAlign='center';
-        c.fillText((b.name||'Fasilitas').slice(0,21),b.x+b.w/2,y-9);
-        c.restore();return;
-      }
+      const img=visualAssets[type], x=b.x-18, y=b.y-24, w=b.w+36, h=b.h+48;
       c.save();
       c.fillStyle='rgba(22,45,31,.24)'; roundedPath(c,x+12,y+18,w,h,22); c.fill();
       c.fillStyle='#d8d2bd'; roundedPath(c,x-5,y-5,w+10,h+10,18); c.fill();
@@ -2606,10 +2588,10 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       c.restore();
     }
     function drawTree(c,t){
-      const x=t.x,y=t.y,r=(t.r||34)*1.45,img=visualAssets.kenneyTownAtlas;
+      const x=t.x,y=t.y,r=(t.r||34)*1.45,img=visualAssets.tree;
       c.save();
       c.fillStyle='rgba(24,48,31,.22)'; c.beginPath(); c.ellipse(x+9,y+13,r*1.05,r*.82,0,0,Math.PI*2); c.fill();
-      if(img&&img.complete&&img.naturalWidth){c.imageSmoothingEnabled=false;c.drawImage(img,0,0,48,48,x-r*1.3,y-r*1.3,r*2.6,r*2.6);}
+      if(img&&img.complete&&img.naturalWidth) c.drawImage(img,x-r*1.3,y-r*1.3,r*2.6,r*2.6);
       else {
         const g=c.createRadialGradient(x-r*.3,y-r*.35,3,x,y,r);
         g.addColorStop(0,'#8bcf70');g.addColorStop(.55,'#39844b');g.addColorStop(1,'#205b3a');
@@ -2653,11 +2635,8 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       c.fillStyle=bg;c.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);
       const groundImg=visualAssets.ground;
       if(groundImg&&groundImg.complete&&groundImg.naturalWidth){
-        c.save();c.imageSmoothingEnabled=false;
-        // Repeat a small grass/ground patch from the authentic atlas.
-        const pat=c.createPattern(groundImg,'repeat');
-        if(pat){c.globalAlpha=.24;c.fillStyle=pat;c.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);}
-        c.restore();
+        const tile=c.createPattern(groundImg,'repeat');
+        if(tile){c.save();c.globalAlpha=.72;c.fillStyle=tile;c.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);c.restore();}
       }
       // softly varied meadow patches and fine grass flecks
       for(let y=0;y<WORLD_HEIGHT;y+=110)for(let x=0;x<WORLD_WIDTH;x+=110){
