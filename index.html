@@ -2547,7 +2547,7 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       office:'assets/buildings/office.svg', mosque:'assets/buildings/mosque.svg',
       school:'assets/buildings/school.svg', clinic:'assets/buildings/clinic.svg',
       hall:'assets/buildings/hall.svg', house:'assets/buildings/house.svg',
-      tree:'assets/environment/tree.svg'
+      tree:'assets/environment/tree.svg', ground:'assets/environment/ground.svg'
     };
     Object.entries(visualAssetSources).forEach(([key,src])=>{
       const img=new Image(); img.onload=()=>{visualAssets[key]=img;};
@@ -2633,6 +2633,11 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       const bg=c.createLinearGradient(0,0,WORLD_WIDTH,WORLD_HEIGHT);
       bg.addColorStop(0,'#91bd75');bg.addColorStop(.5,'#77a963');bg.addColorStop(1,'#5f925b');
       c.fillStyle=bg;c.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);
+      const groundImg=visualAssets.ground;
+      if(groundImg&&groundImg.complete&&groundImg.naturalWidth){
+        const tile=c.createPattern(groundImg,'repeat');
+        if(tile){c.save();c.globalAlpha=.72;c.fillStyle=tile;c.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);c.restore();}
+      }
       // softly varied meadow patches and fine grass flecks
       for(let y=0;y<WORLD_HEIGHT;y+=110)for(let x=0;x<WORLD_WIDTH;x+=110){
         const n=Math.abs(Math.sin(x*12.989+y*78.233)*43758.5453)%1;
