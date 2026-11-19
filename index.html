@@ -2665,12 +2665,12 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
         [840,260,110,1400],[2050,260,110,2800],[3500,260,110,3000],[5600,260,110,3600]
       ];
       roads.forEach(([x,y,w,h])=>{
+        c.fillStyle='#c9c7b5';roundedPath(c,x-9,y-8,w+18,h+16,24);c.fill();
         c.fillStyle='rgba(30,47,42,.18)';roundedPath(c,x-5,y+8,w+10,h+10,24);c.fill();
         c.fillStyle='#68746f';roundedPath(c,x,y,w,h,20);c.fill();
         c.strokeStyle='#929c91';c.lineWidth=5;roundedPath(c,x+5,y+5,w-10,h-10,16);c.stroke();
         c.strokeStyle='rgba(248,239,192,.9)';c.lineWidth=4;c.setLineDash([30,24]);
         c.beginPath();if(w>h){c.moveTo(x+18,y+h/2);c.lineTo(x+w-18,y+h/2);}else{c.moveTo(x+w/2,y+18);c.lineTo(x+w/2,y+h-18);}c.stroke();c.setLineDash([]);
-        c.fillStyle='#c9c7b5';roundedPath(c,x-9,y-8,w+18,h+16,24);c.globalCompositeOperation='destination-over';c.fill();c.globalCompositeOperation='source-over';
       });
       // Zebra crossings and road-edge drains
       [[840,610],[2050,610],[3500,610],[5600,610],[2050,1460],[3500,1560]].forEach(([x,y])=>{
@@ -2705,13 +2705,13 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
         return;
       }
 
-      // Screen-relative movement mapped back into the isometric world axes.
+      // True top-down movement: each key moves along one screen/world axis.
       let vx = 0;
       let vy = 0;
-      if (keys.up)    { vx -= 1; vy -= 1; }
-      if (keys.down)  { vx += 1; vy += 1; }
-      if (keys.left)  { vx -= 1; vy += 1; }
-      if (keys.right) { vx += 1; vy -= 1; }
+      if (keys.up)    { vy -= 1; }
+      if (keys.down)  { vy += 1; }
+      if (keys.left)  { vx -= 1; }
+      if (keys.right) { vx += 1; }
 
       if (vx !== 0 || vy !== 0) {
         const len = Math.hypot(vx, vy);
