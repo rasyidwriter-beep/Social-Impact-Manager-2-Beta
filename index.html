@@ -1319,6 +1319,14 @@
         ctx.restore();
       }
 
+      // Fabric highlights and shoulder seams improve readability at gameplay scale.
+      ctx.save();
+      ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(-7,-7);ctx.quadraticCurveTo(0,-11,7,-7);ctx.stroke();
+      ctx.fillStyle='rgba(15,23,42,.16)';
+      if(dir==='down'){ctx.fillRect(-7,5,14,1.4);}
+      ctx.restore();
+
       // Neck
       ctx.fillStyle = skinColor;
       ctx.fillRect(-2.5, -13, 5, 4);
@@ -2623,6 +2631,18 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       ctx.lineWidth = 2;
       ctx.stroke();
 
+      // Facade identity: material bands, corner pillars and subtle wall texture.
+      ctx.fillStyle='rgba(255,255,255,.34)';
+      ctx.fillRect(b.x+8,b.y+62,7,b.h-78);
+      ctx.fillStyle='rgba(15,23,42,.08)';
+      ctx.fillRect(b.x+b.w-13,b.y+62,5,b.h-78);
+      ctx.fillStyle=b.trimColor||'#e2e8f0';
+      ctx.fillRect(b.x+10,b.y+58,b.w-20,5);
+      // Repeated facade blocks make larger public buildings read as real structures.
+      for(let fy=b.y+116;fy<b.y+b.h-62;fy+=34){
+        ctx.fillStyle='rgba(255,255,255,.12)';
+        ctx.fillRect(b.x+12,fy,b.w-24,2);
+      }
       // Roof with soft material gradient and highlight edge.
       const roofGradient=ctx.createLinearGradient(b.x,b.y,b.x,b.y+58);
       roofGradient.addColorStop(0,b.trimColor||'#f8fafc'); roofGradient.addColorStop(.22,b.roofColor); roofGradient.addColorStop(1,b.roofColor);
@@ -2729,6 +2749,11 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       ctx.fillStyle='rgba(15,23,42,.2)'; ctx.beginPath(); ctx.ellipse(t.x+7,t.y+23,t.r*.95,t.r*.38,0,0,Math.PI*2); ctx.fill();
       const trunk=ctx.createLinearGradient(t.x-6,0,t.x+7,0); trunk.addColorStop(0,'#713f12'); trunk.addColorStop(.5,'#a16207'); trunk.addColorStop(1,'#78350f');
       ctx.fillStyle=trunk; ctx.beginPath(); ctx.roundRect(t.x-6,t.y-1,13,27,4); ctx.fill();
+      // Layered crown silhouette and leaf clusters.
+      ctx.fillStyle='rgba(22,101,52,.45)';
+      [[-.52,-.34,.48],[.48,-.28,.5],[-.2,.22,.54],[.35,.18,.46]].forEach(([ox,oy,scale])=>{
+        ctx.beginPath();ctx.arc(t.x+ox*t.r,t.y-8+oy*t.r,t.r*scale,0,Math.PI*2);ctx.fill();
+      });
       const canopy=ctx.createRadialGradient(t.x-t.r*.28,t.y-t.r*.7,2,t.x,t.y-8,t.r*1.2);
       canopy.addColorStop(0,'#86efac'); canopy.addColorStop(.48,'#22c55e'); canopy.addColorStop(1,'#166534');
       ctx.fillStyle=canopy; ctx.beginPath(); ctx.arc(t.x,t.y-8,t.r,0,Math.PI*2); ctx.fill();
@@ -2739,9 +2764,25 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
 
     function drawWorldEnvironment(ctx) {
       // Rich layered terrain base with deterministic grass texture.
+      // New terrain renderer: layered grass base, irregular meadow patches and ground grain.
       const grass=ctx.createLinearGradient(0,0,WORLD_WIDTH,WORLD_HEIGHT);
-      grass.addColorStop(0,'#79b96a'); grass.addColorStop(.48,'#68a95d'); grass.addColorStop(1,'#4f9657');
+      grass.addColorStop(0,'#8bc879'); grass.addColorStop(.42,'#72b766'); grass.addColorStop(1,'#579b5c');
       ctx.fillStyle=grass; ctx.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);
+      for(let gy=120;gy<WORLD_HEIGHT;gy+=310){
+        for(let gx=100;gx<WORLD_WIDTH;gx+=360){
+          const seed=Math.abs(Math.sin(gx*7.13+gy*3.71)*9182)%1;
+          ctx.fillStyle=seed>.5?'rgba(191,230,151,.10)':'rgba(29,91,49,.075)';
+          ctx.beginPath();ctx.ellipse(gx+seed*95,gy+(1-seed)*65,95+seed*65,44+seed*30,seed*2,0,Math.PI*2);ctx.fill();
+        }
+      }
+      // Dense fine grass strokes create texture at normal gameplay zoom.
+      for(let gy=22;gy<WORLD_HEIGHT;gy+=36){for(let gx=18;gx<WORLD_WIDTH;gx+=42){
+        const seed=Math.abs(Math.sin(gx*12.9898+gy*78.233)*43758.5453)%1;
+        const px=gx+seed*18,py=gy+(1-seed)*13;
+        ctx.strokeStyle=seed>.5?'rgba(236,253,245,.19)':'rgba(20,83,45,.14)';
+        ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(px,py+3);ctx.lineTo(px-2,py-2);ctx.moveTo(px+2,py+3);ctx.lineTo(px+4,py-1);ctx.stroke();
+        if(seed>.94){ctx.fillStyle='#fef08a';ctx.beginPath();ctx.arc(px+3,py-3,2.1,0,Math.PI*2);ctx.fill();}
+      }}
       for(let gy=28;gy<WORLD_HEIGHT;gy+=54){for(let gx=24;gx<WORLD_WIDTH;gx+=58){
         const seed=Math.abs(Math.sin(gx*12.9898+gy*78.233)*43758.5453)%1;
         const px=gx+seed*22,py=gy+(1-seed)*20;
@@ -2845,6 +2886,36 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
       ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('TAMAN KOMUNITAS', 4000, 2730);
+
+      // Road finishing pass: dark asphalt, curb highlights, lane separators and pedestrian crossings.
+      const lanes=[[280,560,1520,95],[2050,560,1450,88],[2050,1380,1450,82],[2050,2180,1450,82],[3450,560,1600,88],[3450,1450,1600,82],[3450,2420,1600,82],[3450,3200,1600,82],[5450,560,1550,88],[5450,1660,1550,82],[5450,2780,1550,82],[5450,3920,1550,82]];
+      ctx.save();
+      lanes.forEach(([x,y,w,h])=>{
+        ctx.fillStyle='rgba(51,65,85,.12)';ctx.beginPath();ctx.roundRect(x+4,y+7,w,h,14);ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.72)';ctx.lineWidth=2;ctx.setLineDash([18,18]);
+        ctx.beginPath();
+        if(w>h){ctx.moveTo(x+18,y+h/2);ctx.lineTo(x+w-18,y+h/2);}
+        else{ctx.moveTo(x+w/2,y+14);ctx.lineTo(x+w/2,y+h-14);}
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      // Crosswalk stripes at major junctions.
+      [[835,565,95,90],[2048,1345,90,110],[3490,1415,100,95],[5610,1620,90,95],[5610,2740,90,95]].forEach(([x,y,w,h])=>{
+        ctx.fillStyle='rgba(255,255,255,.68)';
+        for(let n=0;n<6;n++){
+          if(w<h)ctx.fillRect(x+n*15,y,8,h);
+          else ctx.fillRect(x,y+n*15,w,8);
+        }
+      });
+      ctx.restore();
+
+      // Ground pathways around public facilities.
+      ctx.save();
+      [[500,770,220,24],[1190,760,210,22],[1650,940,180,22],[2380,870,240,22],[3650,3000,700,22],[5800,3460,300,22]].forEach(([x,y,w,h])=>{
+        ctx.fillStyle='#d9cfb7';ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();
+        ctx.strokeStyle='rgba(120,98,69,.22)';ctx.lineWidth=2;ctx.stroke();
+      });
+      ctx.restore();
 
       // Central Village Plaza / Taman Maslahat
       ctx.fillStyle = '#fef3c7';
