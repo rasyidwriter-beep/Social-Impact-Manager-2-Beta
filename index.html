@@ -1375,8 +1375,8 @@
       const previewCtx = canvas.getContext('2d');
       previewCtx.clearRect(0, 0, canvas.width, canvas.height);
       previewCtx.save();
-      previewCtx.translate(50, 61);
-      previewCtx.scale(1.8, 1.8);
+      previewCtx.translate(50, 112);
+      previewCtx.scale(1.2, 1.2);
       drawHumanCharacter(previewCtx, 0, 0, {
         gender: selectedCharGender, dir: 'down', isMoving: false,
         ...readAvatarCustomization(),
@@ -1397,8 +1397,8 @@
         const ctxM = cMale.getContext('2d');
         ctxM.clearRect(0, 0, 64, 80);
         ctxM.save();
-        ctxM.scale(1.45, 1.45);
-        drawHumanCharacter(ctxM, 22, 34, {
+        ctxM.scale(.82, .82);
+        drawHumanCharacter(ctxM, 32, 76, {
           gender: 'male',
           dir: 'down',
           shirtColor: '#0f766e',
@@ -1412,8 +1412,8 @@
         const ctxF = cFemale.getContext('2d');
         ctxF.clearRect(0, 0, 64, 80);
         ctxF.save();
-        ctxF.scale(1.45, 1.45);
-        drawHumanCharacter(ctxF, 22, 34, {
+        ctxF.scale(.82, .82);
+        drawHumanCharacter(ctxF, 32, 76, {
           gender: 'female',
           dir: 'down',
           shirtColor: '#047857',
@@ -2742,14 +2742,6 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
         ctx.strokeStyle='#7f1d1d';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(x-10,y-50);ctx.lineTo(x+5,y-5);ctx.lineTo(x-20,y+30);ctx.stroke();
         ctx.fillStyle='#991b1b';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('RUMAH WARGA RUSAK',x,y-85);
       }
-      // Scenic eastern greenbelt with a lake, walking path and shoreline.
-      const lake=ctx.createRadialGradient(6350,4450,35,6350,4450,360);
-      lake.addColorStop(0,'#7dd3fc');lake.addColorStop(.78,'#38bdf8');lake.addColorStop(1,'#0e7490');
-      ctx.fillStyle='#a7f3d0';ctx.beginPath();ctx.ellipse(6350,4450,390,205,-.12,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle=lake;ctx.beginPath();ctx.ellipse(6350,4450,345,165,-.12,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.38)';ctx.lineWidth=3;
-      for(let q=0;q<5;q++){ctx.beginPath();ctx.ellipse(6280+q*28,4430+q*13,45+q*12,9+q*2,-.12,0,Math.PI*2);ctx.stroke();}
-      ctx.fillStyle='rgba(15,23,42,.65)';ctx.font='800 19px "Plus Jakarta Sans",sans-serif';ctx.textAlign='center';ctx.fillText('DANAU KOMUNITAS',6350,4240);
       ctx.restore();
     }
 
