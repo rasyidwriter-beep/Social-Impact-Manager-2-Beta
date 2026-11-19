@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Social Impact Manager 2 Beta — Three-Quarter Visual Prototype</title>
+  <title>Social Impact Manager 2 Beta — Top-Down World Rebuild</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -2539,214 +2539,162 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    const ISO_X = 0.72;
-    const ISO_Y = 0.36;
-    const worldToScreen = (x, y) => ({ x: (x - y) * ISO_X, y: (x + y) * ISO_Y });
+
+    // TOP-DOWN WORLD RENDERER — rebuilt from the ground up.
+    const worldToScreen = (x,y) => ({x,y});
     const visualAssets = {};
     const visualAssetSources = {
-      house: 'assets/buildings/house.svg',
-      mosque: 'assets/buildings/mosque.svg',
-      clinic: 'assets/buildings/clinic.svg',
-      school: 'assets/buildings/school.svg',
-      community: 'assets/buildings/community.svg',
-      tree: 'assets/environment/tree.svg'
+      office:'assets/buildings/office.svg', mosque:'assets/buildings/mosque.svg',
+      school:'assets/buildings/school.svg', clinic:'assets/buildings/clinic.svg',
+      hall:'assets/buildings/hall.svg', house:'assets/buildings/house.svg',
+      tree:'assets/environment/tree.svg'
     };
-    Object.entries(visualAssetSources).forEach(([key, src]) => {
-      const img = new Image();
-      img.onload = () => { visualAssets[key] = img; };
-      img.onerror = () => { console.warn('Visual asset failed to load:', src); };
-      img.src = src;
+    Object.entries(visualAssetSources).forEach(([key,src])=>{
+      const img=new Image(); img.onload=()=>{visualAssets[key]=img;};
+      img.onerror=()=>console.warn('Asset gagal dimuat:',src); img.src=src;
     });
-    const projectedCorners = [
-      worldToScreen(0,0), worldToScreen(WORLD_WIDTH,0),
-      worldToScreen(WORLD_WIDTH,WORLD_HEIGHT), worldToScreen(0,WORLD_HEIGHT)
-    ];
-    const projectedBounds = {
-      minX: Math.min(...projectedCorners.map(p=>p.x)),
-      maxX: Math.max(...projectedCorners.map(p=>p.x)),
-      minY: Math.min(...projectedCorners.map(p=>p.y)),
-      maxY: Math.max(...projectedCorners.map(p=>p.y))
-    };
-
-
-    let viewWidth = window.innerWidth;
-    let viewHeight = window.innerHeight;
-    let renderScale = Math.min(window.devicePixelRatio || 1, 2);
-    function resizeCanvas() {
-      viewWidth = window.innerWidth;
-      viewHeight = window.innerHeight;
-      renderScale = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(viewWidth * renderScale);
-      canvas.height = Math.round(viewHeight * renderScale);
-      ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
-      ctx.imageSmoothingEnabled = true;
+    let viewWidth=window.innerWidth, viewHeight=window.innerHeight;
+    let renderScale=Math.min(window.devicePixelRatio||1,2);
+    function resizeCanvas(){
+      viewWidth=window.innerWidth; viewHeight=window.innerHeight;
+      renderScale=Math.min(window.devicePixelRatio||1,2);
+      canvas.width=Math.round(viewWidth*renderScale); canvas.height=Math.round(viewHeight*renderScale);
+      ctx.setTransform(renderScale,0,0,renderScale,0,0); ctx.imageSmoothingEnabled=true;
     }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    window.addEventListener('resize',resizeCanvas); resizeCanvas();
 
-    function drawBuilding(ctx, b) {
-      const p = worldToScreen(b.x + b.w/2, b.y + b.h);
-      const type = b.type === 'mosque' ? 'mosque' :
-        b.type === 'clinic' ? 'clinic' :
-        b.type === 'school' ? 'school' :
-        b.type === 'house' ? 'house' : 'community';
-      const img = visualAssets[type];
-      const width = type === 'house' ? 142 : (type === 'mosque' ? 190 : 174);
-      const height = type === 'house' ? 132 : (type === 'mosque' ? 174 : 158);
-      const left = p.x - width/2;
-      const top = p.y - height + 7;
-
-      if (img && img.complete && img.naturalWidth) {
-        ctx.drawImage(img, left, top, width, height);
-      } else {
-        // Detailed vector fallback remains visible while external SVG assets load.
-        ctx.save();
-        ctx.fillStyle = 'rgba(20,35,28,.22)';
-        ctx.beginPath(); ctx.ellipse(p.x+5,p.y-4,width*.48,12,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = b.wallColor || '#f3ead7';
-        ctx.beginPath(); ctx.moveTo(left+18,top+68); ctx.lineTo(p.x+width*.38,top+42);
-        ctx.lineTo(p.x+width*.38,p.y-20); ctx.lineTo(left+18,p.y-2); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#c9b99a';
-        ctx.beginPath(); ctx.moveTo(p.x+width*.38,top+42); ctx.lineTo(left+width-12,top+65);
-        ctx.lineTo(left+width-12,p.y-14); ctx.lineTo(p.x+width*.38,p.y-20); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = b.roofColor || '#64748b';
-        ctx.beginPath(); ctx.moveTo(left+8,top+69); ctx.lineTo(p.x+width*.38,top+24);
-        ctx.lineTo(left+width-4,top+64); ctx.lineTo(p.x+width*.38,top+92); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#8b5e3c'; ctx.fillRect(p.x-12,p.y-49,24,44);
-        ctx.fillStyle = '#93c5d9'; ctx.fillRect(left+33,p.y-73,20,18);
-        ctx.fillRect(p.x+35,p.y-72,20,18);
-        if (type === 'clinic') { ctx.fillStyle='#fff'; ctx.fillRect(p.x-9,top+35,18,24); ctx.fillStyle='#dc3545'; ctx.fillRect(p.x-3,top+38,6,18); ctx.fillRect(p.x-7,top+44,14,6); }
-        if (type === 'mosque') { ctx.fillStyle='#e8c45b'; ctx.beginPath(); ctx.ellipse(p.x,top+30,25,22,0,Math.PI,0); ctx.fill(); }
-        ctx.restore();
-      }
-
-      // Compact location label, preserving the recognizable building names.
-      ctx.save();
-      ctx.font = '700 9px "Plus Jakarta Sans", sans-serif';
-      const title = b.name || 'Fasilitas';
-      const shortTitle = title.length > 24 ? title.slice(0,22) + '…' : title;
-      const tw = ctx.measureText(shortTitle).width;
-      ctx.fillStyle = 'rgba(19,47,39,.82)';
-      ctx.beginPath(); ctx.roundRect(p.x-tw/2-6, top-11, tw+12, 15, 5); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(shortTitle,p.x,top);
-      ctx.restore();
+    function roundedPath(c,x,y,w,h,r){
+      c.beginPath(); c.roundRect(x,y,w,h,r);
     }
-
-    function drawTree(ctx, t) {
-      const p = worldToScreen(t.x,t.y);
-      const r = t.r || 34;
-      const size = Math.max(86, r*2.5);
-      const img = visualAssets.tree;
-      if (img && img.complete && img.naturalWidth) {
-        ctx.drawImage(img,p.x-size/2,p.y-size*1.12,size,size*1.12);
-      } else {
-        ctx.save();
-        ctx.fillStyle='rgba(20,35,28,.2)'; ctx.beginPath(); ctx.ellipse(p.x+4,p.y-2,size*.34,9,0,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle='#80552e'; ctx.fillRect(p.x-5,p.y-48,10,49);
-        const colors=['#2f7c4a','#3f9655','#5eaa63','#79bd70'];
-        for(let i=0;i<4;i++){ctx.fillStyle=colors[i];ctx.beginPath();ctx.arc(p.x+(i%2?13:-12),p.y-62-(i%3)*12,size*(.22-i*.018),0,Math.PI*2);ctx.fill();}
-        ctx.restore();
+    function drawBuilding(c,b){
+      const type=['office','mosque','school','clinic','hall','house'].includes(b.type)?b.type:'hall';
+      const img=visualAssets[type], x=b.x-18, y=b.y-24, w=b.w+36, h=b.h+48;
+      c.save();
+      c.fillStyle='rgba(22,45,31,.24)'; roundedPath(c,x+12,y+18,w,h,22); c.fill();
+      c.fillStyle='#d8d2bd'; roundedPath(c,x-5,y-5,w+10,h+10,18); c.fill();
+      c.fillStyle='#a7a18e'; roundedPath(c,x,y,w,h,15); c.fill();
+      if(img&&img.complete&&img.naturalWidth) c.drawImage(img,x+3,y+3,w-6,h-6);
+      else {
+        c.fillStyle=b.roofColor||'#176b54'; roundedPath(c,x+7,y+7,w-14,h-14,12); c.fill();
+        c.strokeStyle='rgba(255,255,255,.34)'; c.lineWidth=3;
+        for(let k=1;k<5;k++){c.beginPath();c.moveTo(x+12,y+k*(h-20)/5);c.lineTo(x+w-12,y+k*(h-20)/5);c.stroke();}
       }
+      // entrance apron, steps and signboard
+      c.fillStyle='#c6bda8'; roundedPath(c,b.x+b.w/2-35,b.y+b.h-3,70,24,5); c.fill();
+      c.fillStyle='#78563a'; roundedPath(c,b.x+b.w/2-16,b.y+b.h-20,32,22,5); c.fill();
+      c.fillStyle='rgba(18,43,34,.88)'; roundedPath(c,b.x+b.w/2-65,y-23,130,20,7); c.fill();
+      c.fillStyle='#fff'; c.font='700 11px "Plus Jakarta Sans",sans-serif'; c.textAlign='center';
+      c.fillText((b.name||'Fasilitas').length>22?(b.name||'').slice(0,20)+'…':b.name||'Fasilitas',b.x+b.w/2,y-9);
+      c.restore();
     }
-
-    function drawWorldEnvironment(ctx, camX, camY) {
-      ctx.save();
-      ctx.translate(-camX,-camY);
-      const pts = projectedCorners;
-      const base = ctx.createLinearGradient(projectedBounds.minX,projectedBounds.minY,projectedBounds.maxX,projectedBounds.maxY);
-      base.addColorStop(0,'#a8c98a'); base.addColorStop(.48,'#83b878'); base.addColorStop(1,'#5d9b65');
-      ctx.fillStyle = base;
-      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-      pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.fill();
-      ctx.save();
-      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-      pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.clip();
-
-      // Hand-painted meadow texture, generated only inside the current viewport.
-      const sx0 = Math.floor((camX-70)/42)*42;
-      const sy0 = Math.floor((camY-70)/30)*30;
-      for(let sy=sy0; sy<camY+viewHeight+80; sy+=30) {
-        for(let sx=sx0; sx<camX+viewWidth+80; sx+=42) {
-          const seed = Math.abs(Math.sin(sx*12.9898+sy*78.233)*43758.5453)%1;
-          ctx.fillStyle = seed>.5 ? 'rgba(220,239,184,.12)' : 'rgba(39,91,54,.075)';
-          ctx.beginPath(); ctx.ellipse(sx+seed*22,sy+(1-seed)*13,8+seed*10,3+seed*4,seed,0,Math.PI*2); ctx.fill();
-          if(seed>.72) {
-            ctx.strokeStyle='rgba(238,248,218,.34)'; ctx.lineWidth=1.2;
-            ctx.beginPath(); ctx.moveTo(sx,sy+4); ctx.lineTo(sx-2,sy-3);
-            ctx.moveTo(sx+4,sy+4); ctx.lineTo(sx+7,sy-2); ctx.stroke();
-          }
-          if(seed>.94) {
-            ctx.fillStyle='#f4dc8a'; ctx.beginPath(); ctx.arc(sx+9,sy-3,1.7,0,Math.PI*2); ctx.fill();
-          }
-        }
+    function drawTree(c,t){
+      const x=t.x,y=t.y,r=(t.r||34)*1.45,img=visualAssets.tree;
+      c.save();
+      c.fillStyle='rgba(24,48,31,.22)'; c.beginPath(); c.ellipse(x+9,y+13,r*1.05,r*.82,0,0,Math.PI*2); c.fill();
+      if(img&&img.complete&&img.naturalWidth) c.drawImage(img,x-r*1.3,y-r*1.3,r*2.6,r*2.6);
+      else {
+        const g=c.createRadialGradient(x-r*.3,y-r*.35,3,x,y,r);
+        g.addColorStop(0,'#8bcf70');g.addColorStop(.55,'#39844b');g.addColorStop(1,'#205b3a');
+        c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
       }
-
-      // A few organic meadow patches soften the tiled look.
-      for(let i=0;i<34;i++) {
-        const x = projectedBounds.minX + ((i*379)% (projectedBounds.maxX-projectedBounds.minX));
-        const y = projectedBounds.minY + ((i*251)% (projectedBounds.maxY-projectedBounds.minY));
-        ctx.fillStyle = i%2 ? 'rgba(203,225,151,.12)' : 'rgba(47,107,61,.08)';
-        ctx.beginPath(); ctx.ellipse(x,y,42+(i%5)*11,17+(i%4)*6,(i%7)*.2,0,Math.PI*2); ctx.fill();
-      }
-      ctx.restore();
-
-      // Community lake and water well are drawn as separate scenic landmarks.
-      const lake = worldToScreen(6350,4450);
-      ctx.fillStyle='rgba(26,89,107,.22)'; ctx.beginPath(); ctx.ellipse(lake.x+7,lake.y+8,170,62,-.1,0,Math.PI*2); ctx.fill();
-      const water = ctx.createLinearGradient(lake.x-120,lake.y-50,lake.x+120,lake.y+55);
-      water.addColorStop(0,'#9ed9d0'); water.addColorStop(.5,'#4da7ae'); water.addColorStop(1,'#287c91');
-      ctx.fillStyle=water; ctx.beginPath(); ctx.ellipse(lake.x,lake.y,166,57,-.1,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle='rgba(236,255,246,.48)'; ctx.lineWidth=2;
-      for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(lake.x-35+i*18,lake.y-5+i*8,28+i*7,4+i, -.1,0,Math.PI*2);ctx.stroke();}
-
-      const well = worldToScreen(waterWell.x,waterWell.y);
-      ctx.fillStyle='rgba(25,44,34,.22)'; ctx.beginPath(); ctx.ellipse(well.x+3,well.y+5,24,9,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#b98b58'; ctx.beginPath(); ctx.ellipse(well.x,well.y,22,10,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#6c4b32'; ctx.beginPath(); ctx.ellipse(well.x,well.y-2,16,7,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle=state.worldFlags.waterRestored?'#49b8d0':'#3b3329';
-      ctx.beginPath(); ctx.ellipse(well.x,well.y-3,12,4.5,0,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#fff'; ctx.font='700 9px "Plus Jakarta Sans",sans-serif'; ctx.textAlign='center';
-      ctx.fillText(state.worldFlags.waterRestored?'AIR BERSIH':'SUMUR KERING',well.x,well.y+25);
-
-      // Soft map boundary keeps the playable region legible.
-      ctx.strokeStyle='rgba(42,84,54,.35)'; ctx.lineWidth=4;
-      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.stroke();
-      ctx.restore();
+      c.restore();
     }
-
-    function drawDisasterScene(ctx,d) {
-      ctx.save(); const x=d.x,y=d.y;
+    function drawTopPerson(c,x,y,o={}){
+      const moving=!!o.isMoving, phase=(o.walkFrame||0), bob=moving?Math.sin(phase)*2:0;
+      const shirt=o.shirtColor||o.avatar?.shirtColor||'#087f70';
+      const skin=o.skinColor||o.avatar?.skinColor||'#d99b70';
+      const hair=o.hairColor||o.avatar?.hairColor||'#29221e';
+      const female=o.gender==='female'||o.hairStyle==='hijab';
+      c.save(); c.translate(x,y+bob);
+      // soft contact shadow and feet
+      c.fillStyle='rgba(24,39,28,.24)';c.beginPath();c.ellipse(1,8,18,10,0,0,Math.PI*2);c.fill();
+      c.fillStyle='#293747';roundedPath(c,-11,-1,8,15,4);c.fill();roundedPath(c,3,-1,8,15,4);c.fill();
+      // body viewed directly overhead
+      c.fillStyle=shirt;roundedPath(c,-15,-22,30,31,11);c.fill();
+      c.fillStyle='rgba(255,255,255,.24)';roundedPath(c,-11,-19,7,22,4);c.fill();
+      c.fillStyle='rgba(0,0,0,.13)';roundedPath(c,6,-18,6,22,4);c.fill();
+      // arms and hands
+      c.strokeStyle=shirt;c.lineWidth=8;c.lineCap='round';
+      c.beginPath();c.moveTo(-12,-16);c.lineTo(-19,-5+(moving?Math.sin(phase)*4:0));c.moveTo(12,-16);c.lineTo(19,-5-(moving?Math.sin(phase)*4:0));c.stroke();
+      c.fillStyle=skin;c.beginPath();c.arc(-19,-4,4,0,Math.PI*2);c.arc(19,-4,4,0,Math.PI*2);c.fill();
+      // head, hair / hijab silhouette
+      c.fillStyle=female?(o.hijabColor||hair):hair;c.beginPath();c.ellipse(0,-29,13,14,0,0,Math.PI*2);c.fill();
+      c.fillStyle=skin;c.beginPath();c.ellipse(0,-29,9,10,0,0,Math.PI*2);c.fill();
+      if(female){c.fillStyle=o.hijabColor||hair;c.beginPath();c.arc(0,-31,13,Math.PI,Math.PI*2);c.lineTo(12,-19);c.quadraticCurveTo(0,-12,-12,-19);c.closePath();c.fill();c.fillStyle=skin;c.beginPath();c.ellipse(0,-28,7,8,0,0,Math.PI*2);c.fill();}
+      else {c.fillStyle=hair;c.beginPath();c.ellipse(0,-37,10,6,0,Math.PI,Math.PI*2);c.fill();}
+      // direction marker / tiny backpack for readable top-down orientation
+      if(o.isPlayer){c.strokeStyle='#f8d66d';c.lineWidth=2;c.beginPath();c.arc(0,-13,21,0,Math.PI*2);c.stroke();}
+      c.fillStyle='rgba(255,255,255,.9)';c.beginPath();c.arc(-3,-29,1.3,0,Math.PI*2);c.arc(3,-29,1.3,0,Math.PI*2);c.fill();
+      if(o.label){c.font='700 10px "Plus Jakarta Sans",sans-serif';c.textAlign='center';c.lineWidth=3;c.strokeStyle='rgba(12,35,28,.8)';c.strokeText(o.label,x?0:0,-51);c.fillStyle='#fff';c.fillText(o.label,0,-51);}
+      c.restore();
+    }
+    function drawWorldEnvironment(c,camX,camY){
+      c.save();
+      const bg=c.createLinearGradient(0,0,WORLD_WIDTH,WORLD_HEIGHT);
+      bg.addColorStop(0,'#91bd75');bg.addColorStop(.5,'#77a963');bg.addColorStop(1,'#5f925b');
+      c.fillStyle=bg;c.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);
+      // softly varied meadow patches and fine grass flecks
+      for(let y=0;y<WORLD_HEIGHT;y+=110)for(let x=0;x<WORLD_WIDTH;x+=110){
+        const n=Math.abs(Math.sin(x*12.989+y*78.233)*43758.5453)%1;
+        c.fillStyle=n>.5?'rgba(220,239,175,.11)':'rgba(30,91,49,.07)';
+        c.beginPath();c.ellipse(x+n*42,y+(1-n)*36,34+n*28,18+n*14,n,0,Math.PI*2);c.fill();
+        if(n>.78){c.fillStyle='rgba(255,238,161,.65)';for(let j=0;j<3;j++){c.beginPath();c.arc(x+12+j*8,y+10+j*4,2,0,Math.PI*2);c.fill();}}
+      }
+      // park lawns
+      [[1300,760,360,260],[2750,760,380,280],[4240,1770,400,310],[6200,900,400,300],[6100,2700,430,330]].forEach(([x,y,w,h])=>{
+        c.fillStyle='rgba(33,86,48,.18)';roundedPath(c,x+8,y+10,w,h,40);c.fill();
+        c.fillStyle='#9bc77a';roundedPath(c,x,y,w,h,38);c.fill();
+        c.strokeStyle='#e6d9b9';c.lineWidth=22;c.lineCap='round';c.beginPath();c.moveTo(x+30,y+h/2);c.lineTo(x+w-30,y+h/2);c.moveTo(x+w/2,y+25);c.lineTo(x+w/2,y+h-25);c.stroke();
+      });
+      // lake, shoreline and water reflections
+      c.fillStyle='#b5b98b';c.beginPath();c.ellipse(6350,4200,330,210,-.18,0,Math.PI*2);c.fill();
+      const lake=c.createLinearGradient(6100,4050,6600,4380);lake.addColorStop(0,'#9bd8d0');lake.addColorStop(.5,'#4ca8ac');lake.addColorStop(1,'#277c91');
+      c.fillStyle=lake;c.beginPath();c.ellipse(6350,4200,300,180,-.18,0,Math.PI*2);c.fill();
+      c.strokeStyle='rgba(238,255,247,.48)';c.lineWidth=4;for(let i=0;i<9;i++){c.beginPath();c.ellipse(6240+i*24,4160+i*8,35+i*8,5,0,0,Math.PI*2);c.stroke();}
+      // dirt footpaths connect homes and facilities
+      c.strokeStyle='#cbb88e';c.lineWidth=34;c.lineCap='round';c.beginPath();c.moveTo(450,600);c.lineTo(450,830);c.lineTo(1110,830);c.lineTo(1110,870);c.stroke();
+      c.strokeStyle='#e1d2ad';c.lineWidth=20;c.stroke();
+      c.restore();
+    }
+    function drawScenicWorldPass(c){
+      c.save();
+      // Road network: layered asphalt, curb, painted centre line and crossings.
+      const roads=[
+        [180,610,1850,112],[180,1390,1850,104],[2000,610,1700,112],[2000,1460,1700,104],
+        [3650,610,1600,112],[3650,1560,1600,104],[5350,610,1450,112],[5350,1750,1450,104],
+        [840,260,110,1400],[2050,260,110,2800],[3500,260,110,3000],[5600,260,110,3600]
+      ];
+      roads.forEach(([x,y,w,h])=>{
+        c.fillStyle='rgba(30,47,42,.18)';roundedPath(c,x-5,y+8,w+10,h+10,24);c.fill();
+        c.fillStyle='#68746f';roundedPath(c,x,y,w,h,20);c.fill();
+        c.strokeStyle='#929c91';c.lineWidth=5;roundedPath(c,x+5,y+5,w-10,h-10,16);c.stroke();
+        c.strokeStyle='rgba(248,239,192,.9)';c.lineWidth=4;c.setLineDash([30,24]);
+        c.beginPath();if(w>h){c.moveTo(x+18,y+h/2);c.lineTo(x+w-18,y+h/2);}else{c.moveTo(x+w/2,y+18);c.lineTo(x+w/2,y+h-18);}c.stroke();c.setLineDash([]);
+        c.fillStyle='#c9c7b5';roundedPath(c,x-9,y-8,w+18,h+16,24);c.globalCompositeOperation='destination-over';c.fill();c.globalCompositeOperation='source-over';
+      });
+      // Zebra crossings and road-edge drains
+      [[840,610],[2050,610],[3500,610],[5600,610],[2050,1460],[3500,1560]].forEach(([x,y])=>{
+        c.fillStyle='rgba(250,250,238,.86)';for(let i=0;i<7;i++)c.fillRect(x-42+i*13,y-48,7,24);
+      });
+      c.restore();
+    }
+    function drawDisasterScene(c,d){
+      c.save();const x=d.x,y=d.y;
       if(d.type==='flood'){
-        ctx.fillStyle='rgba(14,165,233,0.68)';ctx.beginPath();ctx.ellipse(x,y+80,300,115,-0.08,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle='rgba(224,242,254,0.9)';ctx.lineWidth=5;
-        for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x-220+i*22,y+45+i*30);ctx.quadraticCurveTo(x,y+20+i*30,x+220,y+45+i*30);ctx.stroke();}
-        ctx.fillStyle='#0c4a6e';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('AREA TERENDAM BANJIR',x,y-55);
-      } else if(d.type==='earthquake'){
-        ctx.fillStyle='rgba(120,53,15,0.18)';ctx.beginPath();ctx.ellipse(x,y+90,250,75,0,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle='#475569';ctx.lineWidth=7;
-        for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x-190+i*75,y+15);ctx.lineTo(x-155+i*75,y+70);ctx.lineTo(x-185+i*75,y+105);ctx.stroke();}
-        ctx.fillStyle='#991b1b';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('ZONA GEMPA • RUMAH RETAK',x,y-55);
-        for(let i=0;i<8;i++){ctx.fillStyle=i%2?'#94a3b8':'#a8a29e';ctx.fillRect(x-150+i*38,y+110+(i%3)*12,28,18);}
-      } else if(d.type==='wildfire'){
-        ctx.fillStyle='rgba(120,53,15,0.2)';ctx.beginPath();ctx.ellipse(x,y+90,270,80,0,0,Math.PI*2);ctx.fill();
-        for(let i=0;i<7;i++){const fx=x-180+i*58,fy=y+35+(i%3)*28;ctx.fillStyle='#7c2d12';ctx.fillRect(fx-5,fy,10,45);ctx.fillStyle=i%2?'#f97316':'#dc2626';ctx.beginPath();ctx.moveTo(fx-24,fy+8);ctx.quadraticCurveTo(fx-30,fy-35,fx,fy-52);ctx.quadraticCurveTo(fx+32,fy-20,fx+24,fy+8);ctx.fill();}
-        ctx.fillStyle='rgba(71,85,105,0.45)';for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(x-120+i*58,y-50-(i%2)*22,28,0,Math.PI*2);ctx.fill();}
-        ctx.fillStyle='#7f1d1d';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('KARHUTLA • KABUT ASAP',x,y-105);
-      } else if(d.type==='landslide'){
-        ctx.fillStyle='#92400e';ctx.beginPath();ctx.moveTo(x-260,y+100);ctx.quadraticCurveTo(x-120,y-100,x+20,y+15);ctx.quadraticCurveTo(x+130,y-60,x+270,y+100);ctx.closePath();ctx.fill();
-        ctx.fillStyle='#a3a3a3';for(let i=0;i<12;i++){ctx.beginPath();ctx.arc(x-190+i*34,y+75+(i%3)*14,12+(i%3)*4,0,Math.PI*2);ctx.fill();}
-        ctx.fillStyle='#78350f';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('LONGSOR • AKSES TERPUTUS',x,y-125);
-      } else if(d.type==='house_damage'){
-        ctx.fillStyle='rgba(120,53,15,0.2)';ctx.beginPath();ctx.ellipse(x,y+100,180,55,0,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#ffedd5';ctx.fillRect(x-100,y+5,200,100);ctx.fillStyle='#9a3412';ctx.beginPath();ctx.moveTo(x-120,y+10);ctx.lineTo(x-15,y-60);ctx.lineTo(x+110,y+12);ctx.fill();
-        ctx.strokeStyle='#7f1d1d';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(x-10,y-50);ctx.lineTo(x+5,y-5);ctx.lineTo(x-20,y+30);ctx.stroke();
-        ctx.fillStyle='#991b1b';ctx.font='bold 18px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText('RUMAH WARGA RUSAK',x,y-85);
+        const g=c.createRadialGradient(x,y,20,x,y,260);g.addColorStop(0,'rgba(99,203,226,.82)');g.addColorStop(1,'rgba(21,111,163,.68)');
+        c.fillStyle=g;c.beginPath();c.ellipse(x,y+45,280,155,-.12,0,Math.PI*2);c.fill();
+        c.strokeStyle='rgba(232,252,255,.78)';c.lineWidth=4;for(let i=0;i<8;i++){c.beginPath();c.ellipse(x-120+i*30,y+30+i*12,35+i*15,8,0,0,Math.PI*2);c.stroke();}
+        c.fillStyle='#164e63';c.font='800 18px "Plus Jakarta Sans"';c.textAlign='center';c.fillText('BANJIR',x,y-145);
+      }else if(d.type==='fire'){
+        for(let i=0;i<12;i++){const ox=Math.sin(i*8)*70,oy=Math.cos(i*4)*35;const rg=c.createRadialGradient(x+ox,y+oy,4,x+ox,y+oy,70);rg.addColorStop(0,'rgba(255,225,100,.95)');rg.addColorStop(.5,'rgba(249,115,22,.78)');rg.addColorStop(1,'rgba(220,38,38,0)');c.fillStyle=rg;c.beginPath();c.arc(x+ox,y+oy,70,0,Math.PI*2);c.fill();}
+        c.fillStyle='#7f1d1d';c.font='800 18px "Plus Jakarta Sans"';c.textAlign='center';c.fillText('KEBAKARAN',x,y-115);
+      }else{
+        c.fillStyle='rgba(120,113,108,.3)';c.beginPath();c.ellipse(x,y+25,230,95,0,0,Math.PI*2);c.fill();
+        c.strokeStyle='#a16207';c.lineWidth=10;c.beginPath();c.moveTo(x-150,y+90);c.lineTo(x-20,y-30);c.lineTo(x+120,y+70);c.stroke();
+        c.fillStyle='#7c2d12';c.font='800 18px "Plus Jakarta Sans"';c.textAlign='center';c.fillText('AREA TERDAMPAK',x,y-100);
       }
-      ctx.restore();
+      c.restore();
     }
-
-    let lastTimestamp = 0;
-
     function update(dt) {
       if (!gameRunning) return;
 
@@ -2883,97 +2831,51 @@ function drawWorldAtmosphere(ctx, camX, camY, dt) {
       ctx.restore();
     }
 
-    function render(dt = 1 / 60) {
-      ctx.setTransform(1,0,0,1,0,0);
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    let cameraX=0,cameraY=0,cameraReady=false,worldVisualTime=0;
+    function render(dt=1/60){
+      ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
       ctx.setTransform(renderScale,0,0,renderScale,0,0);
-      ctx.imageSmoothingEnabled = true;
-
-      const playerPoint = worldToScreen(state.player.x,state.player.y);
-      const minCamX = projectedBounds.minX;
-      const maxCamX = Math.max(minCamX,projectedBounds.maxX-viewWidth);
-      const minCamY = projectedBounds.minY;
-      const maxCamY = Math.max(minCamY,projectedBounds.maxY-viewHeight);
-      const targetX = Math.max(minCamX,Math.min(maxCamX,playerPoint.x-viewWidth/2));
-      const targetY = Math.max(minCamY,Math.min(maxCamY,playerPoint.y-viewHeight/2));
+      const targetX=Math.max(0,Math.min(WORLD_WIDTH-viewWidth,state.player.x-viewWidth/2));
+      const targetY=Math.max(0,Math.min(WORLD_HEIGHT-viewHeight,state.player.y-viewHeight/2));
       if(!cameraReady){cameraX=targetX;cameraY=targetY;cameraReady=true;}
-      const cameraEase = 1-Math.exp(-8*Math.min(dt,.05));
-      cameraX += (targetX-cameraX)*cameraEase;
-      cameraY += (targetY-cameraY)*cameraEase;
-      const camX=cameraX, camY=cameraY;
-
-      // 1. Terrain is drawn in projected screen coordinates and clipped to the diamond map.
-      drawWorldEnvironment(ctx,camX,camY);
-
-      // 2. Roads, pedestrian routes and parks retain their original world data,
-      //    but are projected through the same three-quarter camera matrix.
-      ctx.save();
-      ctx.setTransform(renderScale*ISO_X,renderScale*ISO_Y,-renderScale*ISO_X,renderScale*ISO_Y,-camX*renderScale,-camY*renderScale);
-      drawScenicWorldPass(ctx);
-      (state.activeDisasters || []).forEach(d=>drawDisasterScene(ctx,d));
+      const ease=1-Math.exp(-7*Math.min(dt,.05));cameraX+=(targetX-cameraX)*ease;cameraY+=(targetY-cameraY)*ease;
+      ctx.save();ctx.translate(-Math.round(cameraX),-Math.round(cameraY));
+      drawWorldEnvironment(ctx,cameraX,cameraY);drawScenicWorldPass(ctx);
+      (state.activeDisasters||[]).forEach(d=>drawDisasterScene(ctx,d));
+      const items=[];
+      buildings.forEach(b=>items.push({y:b.y+b.h,fn:()=>drawBuilding(ctx,b)}));
+      trees.forEach(t=>items.push({y:t.y,fn:()=>drawTree(ctx,t)}));
+      npcs.forEach(n=>items.push({y:n.y,fn:()=>{
+        drawTopPerson(ctx,n.x,n.y,{gender:n.gender,shirtColor:n.shirtColor,hijabColor:n.hijabColor,label:n.name});
+        let q=n.secondaryQuestId?getQuestById(n.secondaryQuestId):null;
+        if(!q||q.status==='locked'||q.status==='completed')q=n.questId?getQuestById(n.questId):null;
+        if((q&&q.status==='available')||n.isZiswafHub){
+          ctx.fillStyle=q&&q.isCrisis?'#e33d36':'#f3b93f';ctx.beginPath();ctx.arc(n.x,n.y-67,12,0,Math.PI*2);ctx.fill();
+          ctx.fillStyle='#fff';ctx.font='900 13px sans-serif';ctx.textAlign='center';ctx.fillText(q&&q.isCrisis?'!':(n.isZiswafHub?'Rp':'!'),n.x,n.y-62);
+        }
+      }}));
+      items.push({y:state.player.y,fn:()=>drawTopPerson(ctx,state.player.x,state.player.y,{
+        gender:state.gender,shirtColor:state.avatar?.shirtColor,skinColor:state.avatar?.skinColor,
+        hairColor:state.avatar?.hairColor,hairStyle:state.avatar?.hairStyle,hijabColor:state.avatar?.hairColor,
+        isMoving:state.player.isMoving,walkFrame:state.player.walkFrame,label:state.playerName,isPlayer:true
+      })});
+      items.sort((a,b)=>a.y-b.y);items.forEach(i=>i.fn());
+      // water well, garden lamps and tiny environmental details
+      ctx.fillStyle='#806044';ctx.beginPath();ctx.arc(waterWell.x,waterWell.y,25,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=state.worldFlags.waterRestored?'#55c5d7':'#342b25';ctx.beginPath();ctx.arc(waterWell.x,waterWell.y,17,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#e5d3aa';ctx.lineWidth=5;ctx.beginPath();ctx.arc(waterWell.x,waterWell.y,25,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle='#fff';ctx.font='700 10px "Plus Jakarta Sans"';ctx.textAlign='center';ctx.fillText(state.worldFlags.waterRestored?'SUMUR PULIH':'SUMUR KOMUNAL',waterWell.x,waterWell.y+43);
       ctx.restore();
-
-      // 3. Buildings, trees and people use screen-facing painted assets.
-      ctx.save();
-      ctx.setTransform(renderScale,0,0,renderScale,-camX*renderScale,-camY*renderScale);
-      const renderList=[];
-      buildings.forEach(b=>renderList.push({
-        sortY:b.x+b.y+b.h,
-        draw:()=>drawBuilding(ctx,b)
-      }));
-      trees.forEach(t=>renderList.push({
-        sortY:t.x+t.y,
-        draw:()=>drawTree(ctx,t)
-      }));
-      npcs.forEach(npc=>renderList.push({
-        sortY:npc.x+npc.y,
-        draw:()=>{
-          const p=worldToScreen(npc.x,npc.y);
-          drawHumanCharacter(ctx,p.x,p.y,{
-            gender:npc.gender,dir:npc.dir,shirtColor:npc.shirtColor,
-            hijabColor:npc.hijabColor,label:npc.name
-          });
-          let q=npc.secondaryQuestId?getQuestById(npc.secondaryQuestId):null;
-          if(!q||q.status==='locked'||q.status==='completed') q=npc.questId?getQuestById(npc.questId):null;
-          if((q&&q.status==='available')||npc.isZiswafHub){
-            ctx.save();
-            ctx.fillStyle=q&&q.isCrisis?'#dc2626':'#e6a23c';
-            ctx.beginPath();ctx.arc(p.x,p.y-99,9,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#fff';ctx.font='800 12px "Plus Jakarta Sans",sans-serif';ctx.textAlign='center';
-            ctx.fillText(q&&q.isCrisis?'!':(npc.isZiswafHub?'Rp':'!'),p.x,p.y-95);
-            ctx.restore();
-          }
-        }
-      }));
-      renderList.push({
-        sortY:state.player.x+state.player.y,
-        draw:()=>{
-          const p=worldToScreen(state.player.x,state.player.y);
-          drawHumanCharacter(ctx,p.x,p.y,{
-            gender:state.gender,dir:state.player.dir,walkFrame:state.player.walkFrame,
-            isMoving:state.player.isMoving,...(state.avatar||{}),
-            shirtColor:state.avatar?.shirtColor||(state.gender==='male'?'#0f766e':'#047857'),
-            hijabColor:state.avatar?.hairColor||'#fef3c7',
-            skinColor:state.avatar?.skinColor||'#f1c29b',
-            hairColor:state.avatar?.hairColor||'#1e1b18',
-            hairStyle:state.avatar?.hairStyle||'neat',
-            outfit:state.avatar?.outfit||'field',
-            pantsColor:state.avatar?.pantsColor||'#1e293b',
-            label:state.playerName||'',isPlayer:true
-          });
-        }
-      });
-      renderList.sort((a,b)=>a.sortY-b.sortY);
-      renderList.forEach(item=>item.draw());
-
-      // Atmospheric effects are screen-facing, so rain and haze stay vertical.
-      if(state.weather.includes('Kabut Asap')){
-        ctx.fillStyle='rgba(180,83,9,.13)';ctx.fillRect(camX,camY,viewWidth,viewHeight);
-      }else if(state.weather.includes('Hujan')){
-        ctx.fillStyle='rgba(15,23,42,.10)';ctx.fillRect(camX,camY,viewWidth,viewHeight);
+      // screen-space weather and light overlay
+      worldVisualTime+=Math.min(dt,.05);const t=worldVisualTime;
+      if(state.weather.includes('Hujan')){
+        ctx.strokeStyle='rgba(225,241,255,.42)';ctx.lineWidth=1.2;
+        for(let n=0;n<100;n++){const x=(n*79+t*250)%viewWidth,y=(n*127+t*510)%viewHeight;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-7,y+17);ctx.stroke();}
+        ctx.fillStyle='rgba(25,53,78,.10)';ctx.fillRect(0,0,viewWidth,viewHeight);
+      }else if(state.weather.includes('Kabut Asap')){
+        const haze=ctx.createLinearGradient(0,0,viewWidth,viewHeight);haze.addColorStop(0,'rgba(255,190,90,.08)');haze.addColorStop(.5,'rgba(150,80,36,.17)');haze.addColorStop(1,'rgba(100,60,40,.09)');ctx.fillStyle=haze;ctx.fillRect(0,0,viewWidth,viewHeight);
       }
-      drawWorldAtmosphere(ctx,camX,camY,dt);
-      ctx.restore();
     }
 
     function gameLoop(timestamp) {
