@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>SOCIAL IMPACT MANAGER — Simulasi Manajemen Lembaga Sosial</title>
+  <title>Social Impact Manager 2 Beta — Three-Quarter Visual Prototype</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -1181,246 +1181,177 @@
      */
     function drawHumanCharacter(ctx, x, y, options) {
       const {
-        gender = 'male',
-        dir = 'down',
-        walkFrame = 0,
-        isMoving = false,
-        shirtColor = '#0f766e',
-        pantsColor = '#1e293b',
-        hijabColor = '#f8fafc',
-        skinColor = '#f1c29b',
-        hairColor = '#1e1b18',
-        hairStyle = 'neat',
-        outfit = 'field',
-        isPlayer = false,
-        label = ''
-      } = options;
+        gender = 'male', dir = 'down', walkFrame = 0, isMoving = false,
+        shirtColor = '#0f766e', pantsColor = '#1e293b', hijabColor = '#f8fafc',
+        skinColor = '#f1c29b', hairColor = '#1e1b18', hairStyle = 'neat',
+        outfit = 'field', isPlayer = false, label = ''
+      } = options || {};
+      const swing = isMoving ? Math.sin(walkFrame * 0.22) : 0;
+      const bob = isMoving ? Math.abs(Math.cos(walkFrame * 0.22)) * 2.2 : 0;
+      const side = dir === 'left' || dir === 'right';
+      const facingBack = dir === 'up';
 
       ctx.save();
-      ctx.translate(x, y);
+      ctx.translate(x, y - bob);
 
-      // Ground soft shadow
+      // Ground contact and player selection shadow.
       ctx.save();
-      ctx.shadowColor = 'rgba(15, 23, 42, 0.22)';
-      ctx.shadowBlur = 7;
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.20)';
-      ctx.beginPath();
-      ctx.ellipse(0, 20, 13, 5.5, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = 'rgba(20,35,28,.22)';
+      ctx.beginPath(); ctx.ellipse(0, -2, 19, 7, 0, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
-
-      // Player indicator ring
       if (isPlayer) {
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.85)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.ellipse(0, 20, 17, 8, 0, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.strokeStyle = 'rgba(250,204,21,.92)';
+        ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.ellipse(0, -2, 23, 9, 0, 0, Math.PI * 2); ctx.stroke();
       }
 
-      // Walking swing calculations (realistic human stride)
-      const swing = isMoving ? Math.sin(walkFrame * 0.25) : 0;
-      const bob = isMoving ? Math.abs(Math.cos(walkFrame * 0.25)) * 2 : 0;
-
-      // Legs (proportional height ~15px)
-      ctx.fillStyle = pantsColor;
-      if (dir === 'down' || dir === 'up') {
-        const leftLegY = 6 + swing * 3.5;
-        const rightLegY = 6 - swing * 3.5;
-        // Left leg
-        ctx.beginPath();
-        ctx.roundRect(-6.5, leftLegY, 5.2, 14, 2.5);
-        ctx.fill();
-        // Right leg
-        ctx.beginPath();
-        ctx.roundRect(1.3, rightLegY, 5.2, 14, 2.5);
-        ctx.fill();
-        // Shoes
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(-6.8, leftLegY + 11.5, 5.6, 3);
-        ctx.fillRect(1.2, rightLegY + 11.5, 5.6, 3);
-      } else {
-        // Side profile legs
-        const leg1X = -2.5 + swing * 5;
-        const leg2X = -2.5 - swing * 5;
-        ctx.beginPath();
-        ctx.roundRect(leg2X, 6, 5.5, 14, 2.5);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.roundRect(leg1X, 6, 5.5, 14, 2.5);
-        ctx.fill();
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(leg1X, 17.5, 6.5, 3);
-      }
-
-      // Torso: shaded fabric, shoulder seam and subtle garment depth.
-      ctx.translate(0, -bob);
-      const shirtGradient=ctx.createLinearGradient(-10,-10,10,9);
-      shirtGradient.addColorStop(0,'rgba(255,255,255,.34)'); shirtGradient.addColorStop(.22,shirtColor); shirtGradient.addColorStop(.82,shirtColor); shirtGradient.addColorStop(1,'rgba(15,23,42,.32)');
-      ctx.fillStyle=shirtGradient;
-      if (dir === 'down' || dir === 'up') {
-        ctx.beginPath();
-        ctx.roundRect(-9.5, -10, 19, 18, 5);
-        ctx.fill();
-        ctx.strokeStyle='rgba(15,23,42,.2)'; ctx.lineWidth=.8; ctx.stroke();
-
-        // Professional vest / lanyard detail for front view
-        if (dir === 'down') {
-          ctx.fillStyle = 'rgba(255,255,255,0.22)';
-          ctx.fillRect(-3, -10, 6, 17);
-          // ID Card / Lanyard badge
-          ctx.fillStyle = '#fbbf24';
-          ctx.fillRect(2.5, -4, 3.5, 4.5);
-        }
-      } else {
-        // Side torso
-        ctx.beginPath();
-        ctx.roundRect(-6.5, -10, 13, 18, 4.5);
-        ctx.fill();
-      }
-
-      // Outfit styling: distinct uniform details while retaining the base character silhouette.
-      if (dir === 'down' && outfit !== 'casual') {
-        ctx.save();
-        if (outfit === 'field') {
-          ctx.fillStyle = '#fbbf24'; ctx.fillRect(-8, -5, 2.2, 10); ctx.fillRect(5.8, -5, 2.2, 10);
-          ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fillRect(-2, -8, 4, 13);
-        } else if (outfit === 'formal') {
-          ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.3;
-          ctx.beginPath(); ctx.moveTo(-5, -8); ctx.lineTo(0, 1); ctx.lineTo(5, -8); ctx.stroke();
-          ctx.fillStyle = '#f8fafc'; ctx.fillRect(-1, -8, 2, 10);
-        } else if (outfit === 'volunteer') {
-          ctx.fillStyle = '#f8fafc'; ctx.fillRect(-7, -4, 14, 5);
-          ctx.fillStyle = '#dc2626'; ctx.fillRect(-1.2, -4, 2.4, 5);
-        }
-        ctx.restore();
-      }
-
-      // Arms
-      ctx.fillStyle = shirtColor;
-      if (dir === 'down' || dir === 'up') {
-        const leftArmY = -8 - swing * 3;
-        const rightArmY = -8 + swing * 3;
-        ctx.beginPath();
-        ctx.roundRect(-13, leftArmY, 3.8, 13, 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.roundRect(9.2, rightArmY, 3.8, 13, 2);
-        ctx.fill();
-        // Hands
-        ctx.fillStyle = skinColor;
-        ctx.beginPath();
-        ctx.arc(-11.1, leftArmY + 13, 2, 0, Math.PI * 2);
-        ctx.arc(11.1, rightArmY + 13, 2, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        const armSwing = swing * 4.5;
-        ctx.save();
-        ctx.translate(0, -7);
-        ctx.rotate(armSwing * 0.08);
-        ctx.fillStyle = shirtColor;
-        ctx.beginPath();
-        ctx.roundRect(-2.2, 0, 4.4, 12, 2);
-        ctx.fill();
-        ctx.fillStyle = skinColor;
-        ctx.beginPath();
-        ctx.arc(0, 12.5, 2.1, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // Fabric highlights and shoulder seams improve readability at gameplay scale.
+      // Legs, trousers and shoes. Alternating stride is visible even at normal zoom.
+      const legA = swing * 4.2, legB = -swing * 4.2;
       ctx.save();
-      ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(-7,-7);ctx.quadraticCurveTo(0,-11,7,-7);ctx.stroke();
-      ctx.fillStyle='rgba(15,23,42,.16)';
-      if(dir==='down'){ctx.fillRect(-7,5,14,1.4);}
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(15,23,42,.18)'; ctx.lineWidth = 1;
+      const legGrad = ctx.createLinearGradient(-9, -28, 10, -4);
+      legGrad.addColorStop(0, pantsColor); legGrad.addColorStop(1, '#172033');
+      ctx.fillStyle = legGrad;
+      if (side) {
+        ctx.beginPath(); ctx.roundRect(-7 + legA, -28, 8, 23, 3); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(-1 + legB, -28, 8, 23, 3); ctx.fill();
+        ctx.fillStyle = '#263244';
+        ctx.beginPath(); ctx.ellipse(-3 + legA, -5, 7, 3.4, -.12, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(5 + legB, -5, 7, 3.4, -.12, 0, Math.PI*2); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.roundRect(-9, -28 + legA, 8, 23, 3); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(1, -28 + legB, 8, 23, 3); ctx.fill();
+        ctx.fillStyle = '#263244';
+        ctx.beginPath(); ctx.ellipse(-5, -5 + legA, 7, 3.4, -.08, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(5, -5 + legB, 7, 3.4, -.08, 0, Math.PI*2); ctx.fill();
+      }
       ctx.restore();
 
-      // Neck
+      // Arms behind the torso.
+      const armSwing = swing * 5;
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(15,23,42,.16)'; ctx.lineWidth = 1;
+      const armGrad = ctx.createLinearGradient(-15, -49, 15, -27);
+      armGrad.addColorStop(0, '#ffffff'); armGrad.addColorStop(.18, shirtColor); armGrad.addColorStop(1, '#334155');
+      ctx.strokeStyle = armGrad; ctx.lineWidth = 7;
+      if (side) {
+        ctx.beginPath(); ctx.moveTo(-5, -48); ctx.lineTo(-9 + armSwing*.35, -31); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(5, -47); ctx.lineTo(7 - armSwing*.35, -31); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.moveTo(-10, -48); ctx.lineTo(-13 - armSwing*.3, -31); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(10, -48); ctx.lineTo(13 + armSwing*.3, -31); ctx.stroke();
+      }
       ctx.fillStyle = skinColor;
-      ctx.fillRect(-2.5, -13, 5, 4);
+      ctx.beginPath(); ctx.arc(-13 - armSwing*.3, -30, 3.1, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(13 + armSwing*.3, -30, 3.1, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
 
-      // Head (Realistic human head-to-body ratio ~ 1:6.5, radius ~6.8px)
-      const headY = -19;
+      // Torso with rounded silhouette, fabric shading and a soft seam.
+      const body = ctx.createLinearGradient(-13, -54, 13, -26);
+      body.addColorStop(0, '#ffffff'); body.addColorStop(.12, shirtColor);
+      body.addColorStop(.72, shirtColor); body.addColorStop(1, '#243b39');
+      ctx.fillStyle = body;
+      ctx.beginPath();
+      ctx.moveTo(-11, -51); ctx.quadraticCurveTo(-14, -49, -14, -43);
+      ctx.lineTo(-12, -29); ctx.quadraticCurveTo(0, -25, 12, -29);
+      ctx.lineTo(14, -43); ctx.quadraticCurveTo(13, -51, 10, -52);
+      ctx.quadraticCurveTo(0, -57, -11, -51); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(15,23,42,.23)'; ctx.lineWidth = 1.1; ctx.stroke();
+
+      // Outfit details: field vest, formal shirt or volunteer marking.
+      if (outfit === 'field') {
+        ctx.fillStyle = 'rgba(255,255,255,.22)';
+        ctx.beginPath(); ctx.moveTo(-7,-50); ctx.lineTo(-2,-49); ctx.lineTo(-3,-30); ctx.lineTo(-8,-31); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#f4bd4f'; ctx.fillRect(-11,-43,3,10); ctx.fillRect(8,-43,3,10);
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(2,-44,5,6);
+        ctx.fillStyle = '#eab308'; ctx.fillRect(3,-43,3,4);
+      } else if (outfit === 'formal') {
+        ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(-5,-51); ctx.lineTo(0,-42); ctx.lineTo(5,-51); ctx.stroke();
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(-1,-44,2,13);
+        ctx.fillStyle = '#fbbf24'; ctx.fillRect(2,-36,2,2);
+      } else if (outfit === 'volunteer') {
+        ctx.fillStyle = '#f8fafc'; ctx.fillRect(-8,-42,16,5);
+        ctx.fillStyle = '#dc2626'; ctx.fillRect(-2,-42,4,5);
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.fillRect(-7,-47,14,2);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(-8,-49); ctx.quadraticCurveTo(0,-53,8,-49); ctx.stroke();
+
+      // Neck and head.
+      ctx.fillStyle = skinColor;
+      ctx.beginPath(); ctx.roundRect(-4,-59,8,9,3); ctx.fill();
+      const headX = side ? (dir === 'left' ? -2 : 2) : 0;
+      const headY = -66;
       if (gender === 'female') {
-        // Neat Hijab / Headscarf wrap
+        // Soft hijab silhouette with shoulder drape and a lighter folded edge.
         ctx.fillStyle = hijabColor;
         ctx.beginPath();
-        ctx.arc(0, headY, 8.2, 0, Math.PI * 2);
-        ctx.fill();
-        // Hijab drape over shoulders
-        ctx.beginPath();
-        ctx.moveTo(-8, headY + 2);
-        ctx.quadraticCurveTo(0, headY + 13, 8, headY + 2);
-        ctx.fill();
+        ctx.moveTo(-12,-68); ctx.quadraticCurveTo(-12,-81,0,-82);
+        ctx.quadraticCurveTo(13,-80,12,-66); ctx.lineTo(13,-48);
+        ctx.quadraticCurveTo(7,-45,3,-50); ctx.lineTo(0,-57);
+        ctx.lineTo(-4,-49); ctx.quadraticCurveTo(-10,-45,-13,-50);
+        ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(15,23,42,.18)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,.48)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(-8,-70); ctx.quadraticCurveTo(-2,-78,7,-72); ctx.stroke();
       }
-
-      // Face base with soft natural shading.
-      const faceGradient=ctx.createLinearGradient(-6,headY-6,7,headY+7);
-      faceGradient.addColorStop(0,'#fff1df'); faceGradient.addColorStop(.34,skinColor); faceGradient.addColorStop(1,'rgba(120,53,15,.28)');
-      ctx.fillStyle=faceGradient;
+      const face = ctx.createLinearGradient(-8,-76,8,-57);
+      face.addColorStop(0,'#ffe7ca'); face.addColorStop(.42,skinColor); face.addColorStop(1,'#b97855');
+      ctx.fillStyle = face;
       ctx.beginPath();
-      if (gender === 'female') {
-        ctx.arc(dir === 'left' ? -1.5 : dir === 'right' ? 1.5 : 0, headY, 6.2, 0, Math.PI * 2);
-      } else {
-        ctx.arc(0, headY, 6.8, 0, Math.PI * 2);
-      }
+      ctx.ellipse(headX,headY, gender === 'female' ? 7.7 : 8.2, 10, 0, 0, Math.PI*2);
       ctx.fill();
-
-      // Custom hair and headwear styles
       if (gender === 'male') {
         ctx.fillStyle = hairColor;
         ctx.beginPath();
-        if (hairStyle === 'short' || dir === 'up') {
-          ctx.arc(0, headY, 7, Math.PI, Math.PI * 2);
-        } else if (hairStyle === 'wavy') {
-          ctx.arc(-2, headY - 1, 6.8, Math.PI, 0);
-          ctx.arc(3, headY - 2, 3.2, Math.PI, 0);
+        if (hairStyle === 'wavy') {
+          ctx.moveTo(-8,-68); ctx.quadraticCurveTo(-11,-80,-3,-81);
+          ctx.quadraticCurveTo(2,-85,7,-78); ctx.quadraticCurveTo(12,-76,8,-67);
+          ctx.quadraticCurveTo(2,-72,-2,-70); ctx.closePath();
         } else if (hairStyle === 'long') {
-          ctx.arc(0, headY - 1, 7, Math.PI, 0);
-          ctx.roundRect(-7, headY - 1, 3.2, 12, 2);
-          ctx.roundRect(3.8, headY - 1, 3.2, 12, 2);
+          ctx.moveTo(-8,-68); ctx.quadraticCurveTo(-10,-82,0,-82);
+          ctx.quadraticCurveTo(10,-82,8,-68); ctx.lineTo(9,-56);
+          ctx.lineTo(5,-58); ctx.lineTo(5,-69); ctx.closePath();
         } else {
-          ctx.arc(0, headY - 1.5, 6.8, Math.PI, 0);
+          ctx.moveTo(-8,-68); ctx.quadraticCurveTo(-10,-80,0,-81);
+          ctx.quadraticCurveTo(10,-81,8,-68); ctx.quadraticCurveTo(2,-72,-3,-69); ctx.closePath();
         }
         ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(-5,-76); ctx.quadraticCurveTo(0,-80,5,-76); ctx.stroke();
       } else if (hairStyle === 'sport') {
-        ctx.fillStyle = hairColor;
-        ctx.beginPath(); ctx.arc(0, headY, 8.4, Math.PI, 0); ctx.fill();
+        ctx.fillStyle = hairColor; ctx.beginPath(); ctx.arc(0,-72,8,Math.PI,0); ctx.fill();
       }
 
-      // Eyes (only when facing front or sides)
-      ctx.fillStyle = '#0f172a';
-      if (dir === 'down') {
-        ctx.beginPath();
-        ctx.arc(-2.3, headY + 0.5, 1.1, 0, Math.PI * 2);
-        ctx.arc(2.3, headY + 0.5, 1.1, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (dir === 'left') {
-        ctx.beginPath();
-        ctx.arc(-3.6, headY + 0.5, 1.1, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (dir === 'right') {
-        ctx.beginPath();
-        ctx.arc(3.6, headY + 0.5, 1.1, 0, Math.PI * 2);
-        ctx.fill();
+      // Facial features only on front/side-facing frames.
+      if (!facingBack) {
+        ctx.fillStyle = '#263238';
+        if (side) {
+          ctx.beginPath(); ctx.ellipse(dir === 'left' ? -4.2 : 4.2,-66,1.05,1.45,0,0,Math.PI*2); ctx.fill();
+        } else {
+          ctx.beginPath(); ctx.ellipse(-3,-66,1.05,1.4,0,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(3,-66,1.05,1.4,0,0,Math.PI*2); ctx.fill();
+          ctx.strokeStyle = 'rgba(120,53,15,.4)'; ctx.lineWidth = .8;
+          ctx.beginPath(); ctx.arc(0,-61,2.2,.2,Math.PI-.2); ctx.stroke();
+        }
+      }
+      if (facingBack && gender === 'female') {
+        ctx.fillStyle = hijabColor; ctx.beginPath(); ctx.ellipse(0,-67,8,10,0,0,Math.PI*2); ctx.fill();
       }
 
       ctx.restore();
 
-      // Optional floating nameplate for NPCs
       if (label) {
         ctx.save();
-        ctx.font = '700 11px "Plus Jakarta Sans", sans-serif';
-        const textWidth = ctx.measureText(label).width;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.78)';
-        ctx.beginPath();
-        ctx.roundRect(x - textWidth / 2 - 7, y - 44, textWidth + 14, 18, 6);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.fillText(label, x, y - 31);
+        ctx.font = '700 10px "Plus Jakarta Sans", sans-serif';
+        const tw = ctx.measureText(label).width;
+        ctx.fillStyle = 'rgba(22,39,34,.82)';
+        ctx.beginPath(); ctx.roundRect(x - tw/2 - 7, y - 91, tw + 14, 17, 6); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 79);
         ctx.restore();
       }
     }
@@ -2608,6 +2539,36 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
+    const ISO_X = 0.72;
+    const ISO_Y = 0.36;
+    const worldToScreen = (x, y) => ({ x: (x - y) * ISO_X, y: (x + y) * ISO_Y });
+    const visualAssets = {};
+    const visualAssetSources = {
+      house: 'assets/buildings/house.svg',
+      mosque: 'assets/buildings/mosque.svg',
+      clinic: 'assets/buildings/clinic.svg',
+      school: 'assets/buildings/school.svg',
+      community: 'assets/buildings/community.svg',
+      tree: 'assets/environment/tree.svg'
+    };
+    Object.entries(visualAssetSources).forEach(([key, src]) => {
+      const img = new Image();
+      img.onload = () => { visualAssets[key] = img; };
+      img.onerror = () => { console.warn('Visual asset failed to load:', src); };
+      img.src = src;
+    });
+    const projectedCorners = [
+      worldToScreen(0,0), worldToScreen(WORLD_WIDTH,0),
+      worldToScreen(WORLD_WIDTH,WORLD_HEIGHT), worldToScreen(0,WORLD_HEIGHT)
+    ];
+    const projectedBounds = {
+      minX: Math.min(...projectedCorners.map(p=>p.x)),
+      maxX: Math.max(...projectedCorners.map(p=>p.x)),
+      minY: Math.min(...projectedCorners.map(p=>p.y)),
+      maxY: Math.max(...projectedCorners.map(p=>p.y))
+    };
+
+
     let viewWidth = window.innerWidth;
     let viewHeight = window.innerHeight;
     let renderScale = Math.min(window.devicePixelRatio || 1, 2);
@@ -2624,348 +2585,133 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
     resizeCanvas();
 
     function drawBuilding(ctx, b) {
-  ctx.save();
-  const x=b.x,y=b.y,w=b.w,h=b.h;
-  const trim=b.trimColor||'#e7e5e4', wall=b.wallColor||'#e8e2d5';
-  // Architectural footprint, cast shadow and landscaped forecourt
-  ctx.fillStyle='rgba(15,23,42,.24)';ctx.beginPath();ctx.roundRect(x+14,y+22,w,h,18);ctx.fill();
-  ctx.fillStyle='#a8a29e';ctx.beginPath();ctx.roundRect(x-8,y+h-12,w+16,22,8);ctx.fill();
-  ctx.fillStyle='#d6d3d1';ctx.beginPath();ctx.roundRect(x-4,y+h-16,w+8,16,6);ctx.fill();
-  // Main walls with a warm, dimensional facade
-  const facade=ctx.createLinearGradient(x,y,x+w,y+h);
-  facade.addColorStop(0,'#fffdf7');facade.addColorStop(.18,wall);facade.addColorStop(1,'#cbd5c2');
-  ctx.fillStyle=facade;ctx.beginPath();ctx.roundRect(x,y+40,w,h-48,12);ctx.fill();
-  ctx.strokeStyle='rgba(71,85,65,.38)';ctx.lineWidth=2;ctx.stroke();
-  // Roof: broad overhang, fascia, and separate roof planes
-  ctx.fillStyle='rgba(15,23,42,.18)';ctx.beginPath();ctx.roundRect(x-12,y+28,w+24,24,8);ctx.fill();
-  const roof=ctx.createLinearGradient(x,y,x,y+54);
-  roof.addColorStop(0,trim);roof.addColorStop(.45,b.roofColor||'#64748b');roof.addColorStop(1,'#334155');
-  ctx.fillStyle=roof;ctx.beginPath();ctx.roundRect(x-10,y-7,w+20,58,13);ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(x+5,y+1,w-10,4);
-  // Recessed upper clerestory band
-  ctx.fillStyle='rgba(15,23,42,.17)';ctx.fillRect(x+10,y+55,w-20,8);
-  // Windows in framed bays
-  const cols=Math.max(2,Math.floor(w/76)), gap=(w-36)/cols;
-  for(let row=0;row<2;row++) for(let c=0;c<cols;c++){
-    const wx=x+18+c*gap+7, wy=y+78+row*48;
-    if(wy+31>y+h-56)continue;
-    ctx.fillStyle='#475569';ctx.beginPath();ctx.roundRect(wx-3,wy-3,34,36,5);ctx.fill();
-    const glass=ctx.createLinearGradient(wx,wy,wx+28,wy+30);
-    glass.addColorStop(0,'#dbeafe');glass.addColorStop(.5,'#7dd3fc');glass.addColorStop(1,'#256d86');
-    ctx.fillStyle=glass;ctx.beginPath();ctx.roundRect(wx,wy,28,30,3);ctx.fill();
-    ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.moveTo(wx+14,wy);ctx.lineTo(wx+14,wy+30);ctx.moveTo(wx,wy+15);ctx.lineTo(wx+28,wy+15);ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(wx+3,wy+3,5,21);
-  }
-  // Distinct entrance and accessible steps
-  ctx.fillStyle='#64748b';ctx.beginPath();ctx.roundRect(x+w/2-25,y+h-62,50,62,[7,7,0,0]);ctx.fill();
-  ctx.fillStyle='#78350f';ctx.beginPath();ctx.roundRect(x+w/2-19,y+h-57,38,57,[5,5,0,0]);ctx.fill();
-  ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(x+w/2+12,y+h-28,3,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#e7e5e4';ctx.beginPath();ctx.roundRect(x+w/2-31,y+h-5,62,10,3);ctx.fill();
-  // Building identity plaque
-  const title=b.name||'Fasilitas';
-  ctx.font='800 13px "Plus Jakarta Sans",sans-serif';
-  const tw=Math.min(w-12,ctx.measureText(title).width+28);
-  ctx.fillStyle='#123b35';ctx.beginPath();ctx.roundRect(x+w/2-tw/2,y+13,tw,27,8);ctx.fill();
-  ctx.fillStyle='#f8fafc';ctx.textAlign='center';ctx.fillText(title,x+w/2,y+31);
-  // Signature architecture per facility
-  if(b.type==='mosque'){
-    const cx=x+w/2;
-    ctx.fillStyle='#d6a72c';ctx.beginPath();ctx.ellipse(cx,y+7,Math.min(43,w*.2),30,0,Math.PI,0);ctx.fill();
-    ctx.strokeStyle='#fff1a8';ctx.lineWidth=3;ctx.stroke();
-    ctx.fillStyle='#f8d66d';ctx.fillRect(cx-2,y-31,4,14);
-    ctx.beginPath();ctx.arc(cx,y-34,5,0,Math.PI*2);ctx.fill();
-    for(const tx of [x+22,x+w-22]){ctx.fillStyle='#f5d77a';ctx.fillRect(tx-5,y-9,10,57);ctx.beginPath();ctx.moveTo(tx-9,y-9);ctx.lineTo(tx,y-25);ctx.lineTo(tx+9,y-9);ctx.fill();}
-  } else if(b.type==='clinic'){
-    ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(x+w/2-20,y-1,40,40,8);ctx.fill();
-    ctx.fillStyle='#e11d48';ctx.fillRect(x+w/2-5,y+6,10,28);ctx.fillRect(x+w/2-14,y+15,28,10);
-  } else {
-    ctx.fillStyle='rgba(255,255,255,.25)';ctx.fillRect(x+8,y+65,w-16,4);
-  }
-  // Planters make public buildings feel grounded in the village
-  for(const px of [x+12,x+w-12]){ctx.fillStyle='#9a6b43';ctx.beginPath();ctx.roundRect(px-9,y+h-22,18,12,3);ctx.fill();ctx.fillStyle='#16a34a';ctx.beginPath();ctx.arc(px,y+h-26,9,0,Math.PI*2);ctx.fill();}
-  ctx.restore();
-}
+      const p = worldToScreen(b.x + b.w/2, b.y + b.h);
+      const type = b.type === 'mosque' ? 'mosque' :
+        b.type === 'clinic' ? 'clinic' :
+        b.type === 'school' ? 'school' :
+        b.type === 'house' ? 'house' : 'community';
+      const img = visualAssets[type];
+      const width = type === 'house' ? 142 : (type === 'mosque' ? 190 : 174);
+      const height = type === 'house' ? 132 : (type === 'mosque' ? 174 : 158);
+      const left = p.x - width/2;
+      const top = p.y - height + 7;
 
-    function drawTree(ctx,t){
- ctx.save();const x=t.x,y=t.y,r=t.r||30;
- // Soft contact shadow and sculpted trunk
- ctx.fillStyle='rgba(15,23,42,.25)';ctx.beginPath();ctx.ellipse(x+8,y+24,r*.9,r*.34,-.12,0,Math.PI*2);ctx.fill();
- const bark=ctx.createLinearGradient(x-8,0,x+9,0);bark.addColorStop(0,'#713f12');bark.addColorStop(.45,'#b77935');bark.addColorStop(1,'#5b3417');
- ctx.fillStyle=bark;ctx.beginPath();ctx.roundRect(x-7,y-8,15,34,5);ctx.fill();
- ctx.strokeStyle='rgba(255,220,160,.45)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-2,y-3);ctx.lineTo(x-2,y+20);ctx.stroke();
- // Layered canopy clusters with varied highlights
- const blobs=[[-.48,-.22,.58],[-.05,-.55,.58],[.43,-.28,.55],[-.38,.25,.52],[.16,.18,.62],[.55,.22,.42]];
- for(let i=0;i<blobs.length;i++){const [ox,oy,sc]=blobs[i],cx=x+ox*r,cy=y-12+oy*r;
-  const g=ctx.createRadialGradient(cx-r*.16,cy-r*.2,1,cx,cy,r*sc);g.addColorStop(0,i%2?'#a7f3a0':'#bbf7a8');g.addColorStop(.42,i%2?'#4ade80':'#22c55e');g.addColorStop(1,'#166534');
-  ctx.fillStyle='rgba(20,83,45,.22)';ctx.beginPath();ctx.arc(cx+3,cy+5,r*sc,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r*sc,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='rgba(240,253,220,.24)';ctx.beginPath();ctx.ellipse(cx-r*.18,cy-r*.2,r*sc*.35,r*sc*.18,-.5,0,Math.PI*2);ctx.fill();
- }
- // Tiny fruit/flower accents
- ctx.fillStyle='#facc15';for(let i=0;i<3;i++){const a=i*2.1+.4;ctx.beginPath();ctx.arc(x+Math.cos(a)*r*.48,y-12+Math.sin(a)*r*.35,2.2,0,Math.PI*2);ctx.fill();}
- ctx.restore();
-}
-
-    function drawWorldEnvironment(ctx) {
-      // Rich layered terrain base with deterministic grass texture.
-      // New terrain renderer: layered grass base, irregular meadow patches and ground grain.
-      const grass=ctx.createLinearGradient(0,0,WORLD_WIDTH,WORLD_HEIGHT);
-      grass.addColorStop(0,'#8bc879'); grass.addColorStop(.42,'#72b766'); grass.addColorStop(1,'#579b5c');
-      ctx.fillStyle=grass; ctx.fillRect(0,0,WORLD_WIDTH,WORLD_HEIGHT);
-      for(let gy=120;gy<WORLD_HEIGHT;gy+=310){
-        for(let gx=100;gx<WORLD_WIDTH;gx+=360){
-          const seed=Math.abs(Math.sin(gx*7.13+gy*3.71)*9182)%1;
-          ctx.fillStyle=seed>.5?'rgba(191,230,151,.10)':'rgba(29,91,49,.075)';
-          ctx.beginPath();ctx.ellipse(gx+seed*95,gy+(1-seed)*65,95+seed*65,44+seed*30,seed*2,0,Math.PI*2);ctx.fill();
-        }
-      }
-      // Dense fine grass strokes create texture at normal gameplay zoom.
-      for(let gy=22;gy<WORLD_HEIGHT;gy+=36){for(let gx=18;gx<WORLD_WIDTH;gx+=42){
-        const seed=Math.abs(Math.sin(gx*12.9898+gy*78.233)*43758.5453)%1;
-        const px=gx+seed*18,py=gy+(1-seed)*13;
-        ctx.strokeStyle=seed>.5?'rgba(236,253,245,.19)':'rgba(20,83,45,.14)';
-        ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(px,py+3);ctx.lineTo(px-2,py-2);ctx.moveTo(px+2,py+3);ctx.lineTo(px+4,py-1);ctx.stroke();
-        if(seed>.94){ctx.fillStyle='#fef08a';ctx.beginPath();ctx.arc(px+3,py-3,2.1,0,Math.PI*2);ctx.fill();}
-      }}
-      for(let gy=28;gy<WORLD_HEIGHT;gy+=54){for(let gx=24;gx<WORLD_WIDTH;gx+=58){
-        const seed=Math.abs(Math.sin(gx*12.9898+gy*78.233)*43758.5453)%1;
-        const px=gx+seed*22,py=gy+(1-seed)*20;
-        ctx.fillStyle=seed>.52?'rgba(236,253,245,.12)':'rgba(20,83,45,.09)';
-        ctx.beginPath();ctx.ellipse(px,py,2.2+seed*1.8,1.1,seed*2,0,Math.PI*2);ctx.fill();
-        if(seed>.88){ctx.strokeStyle='rgba(22,101,52,.22)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,py+2);ctx.lineTo(px-2,py-3);ctx.moveTo(px,py+2);ctx.lineTo(px+2,py-2);ctx.stroke();}
-      }}
-
-      // Road shoulders beneath paved roads add depth and natural borders.
-      ctx.fillStyle='#b7a98d'; ctx.strokeStyle='#a89576'; ctx.lineWidth=2;
-      const roadRects=[[280,560,1520,95,20],[840,420,95,860,20],[380,1140,1340,80,20],[2050,560,1450,88,18],[2050,430,88,1850,18],[2050,1380,1450,82,18],[2050,2180,1450,82,18],[3450,560,1600,88,18],[3500,430,88,2800,18],[3450,1450,1600,82,18],[3450,2420,1600,82,18],[3450,3200,1600,82,18]];
-      roadRects.forEach(([x,y,w,h,r])=>{ctx.beginPath();ctx.roundRect(x-5,y-5,w+10,h+10,r+4);ctx.fill();});
-      ctx.fillStyle='#d8d2c4'; ctx.strokeStyle='#c4bdae'; ctx.lineWidth=2;
-
-      // Main East-West Avenue
-      ctx.beginPath();
-      ctx.roundRect(280, 560, 1520, 95, 20);
-      ctx.fill();
-      ctx.stroke();
-
-      // North-South Central Boulevard
-      ctx.beginPath();
-      ctx.roundRect(840, 420, 95, 860, 20);
-      ctx.fill();
-      ctx.stroke();
-
-      // Southern Residential Road
-      ctx.beginPath();
-      ctx.roundRect(380, 1140, 1340, 80, 20);
-      ctx.fill();
-      ctx.stroke();
-
-      // Connectors to Buildings
-      ctx.fillRect(565, 430, 50, 135);  // Office connector
-      ctx.fillRect(1135, 425, 50, 140); // Mosque connector
-      ctx.fillRect(1670, 450, 50, 115); // School connector
-      ctx.fillRect(1655, 1025, 50, 120);// Clinic connector
-      ctx.fillRect(1095, 1050, 50, 95); // Balai connector
-      ctx.fillRect(415, 1020, 50, 125); // West house connector
-
-      // Roads connecting the expanded eastern and southern districts
-      ctx.beginPath(); ctx.roundRect(2050, 560, 1450, 88, 18); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.roundRect(2050, 430, 88, 1850, 18); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.roundRect(2050, 1380, 1450, 82, 18); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.roundRect(2050, 2180, 1450, 82, 18); ctx.fill(); ctx.stroke();
-      ctx.fillRect(2465, 530, 50, 40); ctx.fillRect(2980, 525, 50, 45);
-      ctx.fillRect(2490, 1290, 50, 90); ctx.fillRect(3050, 1290, 50, 90);
-      ctx.fillRect(2460, 2105, 50, 80); ctx.fillRect(3060, 2105, 50, 80);
-
-      ctx.save();
-      ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
-      ctx.fillText('KAWASAN EKONOMI & UMKM', 2760, 300);
-      ctx.fillText('KAWASAN PENDIDIKAN & KEMANUSIAAN', 2780, 1050);
-      ctx.fillText('KAWASAN KOPERASI & LINGKUNGAN', 2780, 1870);
-      ctx.restore();
-
-      // Extended east-side roads connecting the new coastal and social-enterprise districts
-      ctx.beginPath(); ctx.roundRect(3450, 560, 1600, 88, 18); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.roundRect(3500, 430, 88, 2800, 18); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.roundRect(3450, 1450, 1600, 82, 18); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.roundRect(3450, 2420, 1600, 82, 18); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.roundRect(3450, 3200, 1600, 82, 18); ctx.fill(); ctx.stroke();
-      ctx.fillRect(3975, 535, 50, 35); ctx.fillRect(4645, 525, 50, 45);
-      ctx.fillRect(3975, 1420, 50, 35); ctx.fillRect(4645, 1420, 50, 35);
-      ctx.fillRect(3975, 2400, 50, 35); ctx.fillRect(4645, 2400, 50, 35);
-      ctx.fillRect(3975, 3160, 50, 40); ctx.fillRect(4645, 3160, 50, 40);
-
-      ctx.save();
-      ctx.font = '800 22px "Plus Jakarta Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
-      ctx.fillText('KAWASAN PESISIR & KETERAMPILAN', 4300, 280);
-      ctx.fillText('KAWASAN PERLINDUNGAN & LOGISTIK', 4300, 1110);
-      ctx.fillText('KAWASAN USAHA SOSIAL & DAUR ULANG', 4300, 2070);
-      ctx.fillText('KAWASAN PEMUDA & PEMBERDAYAAN', 4300, 2860);
-      ctx.restore();
-
-      // New eastern district: connected roads, pedestrian paths and district signage.
-      ctx.fillStyle='#b7a98d'; ctx.strokeStyle='#a89576'; ctx.lineWidth=2;
-      [[5450,560,1550,88,18],[5650,430,88,3800,18],[5450,1660,1550,82,18],[5450,2780,1550,82,18],[5450,3920,1550,82,18]].forEach(([x,y,w,h,r])=>{ctx.beginPath();ctx.roundRect(x-5,y-5,w+10,h+10,r+4);ctx.fill();});
-      ctx.fillStyle='#d8d2c4'; ctx.strokeStyle='#c4bdae'; ctx.lineWidth=2;
-      [[5450,560,1550,88,18],[5650,430,88,3800,18],[5450,1660,1550,82,18],[5450,2780,1550,82,18],[5450,3920,1550,82,18]].forEach(([x,y,w,h,r])=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.stroke();});
-      ctx.fillRect(6018,530,48,35);ctx.fillRect(6625,530,48,35);
-      ctx.fillRect(6018,1575,48,35);ctx.fillRect(6625,1575,48,35);
-      ctx.fillRect(6018,2695,48,35);ctx.fillRect(6625,2695,48,35);
-      ctx.fillRect(6018,3835,48,35);ctx.fillRect(6625,3835,48,35);
-      ctx.save(); ctx.font='800 21px "Plus Jakarta Sans",sans-serif';ctx.textAlign='center';ctx.fillStyle='rgba(15,23,42,.72)';
-      ctx.fillText('KAWASAN LAYANAN PESISIR',6270,280);
-      ctx.fillText('PUSAT TANGGAP DARURAT',6270,1300);
-      ctx.fillText('KAWASAN PANGAN & LITERASI',6270,2410);
-      ctx.fillText('KAWASAN AIR BERSIH & RELAWAN',6270,3540);ctx.restore();
-
-      // Community park and retention pond in the new southern district
-      ctx.fillStyle = '#bbf7d0';
-      ctx.beginPath(); ctx.roundRect(3650, 2670, 700, 300, 48); ctx.fill();
-      ctx.fillStyle = '#38bdf8';
-      ctx.beginPath(); ctx.ellipse(4000, 2820, 155, 78, -0.12, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#166534';
-      ctx.font = '800 18px "Plus Jakarta Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('TAMAN KOMUNITAS', 4000, 2730);
-
-      // Road finishing pass: dark asphalt, curb highlights, lane separators and pedestrian crossings.
-      const lanes=[[280,560,1520,95],[2050,560,1450,88],[2050,1380,1450,82],[2050,2180,1450,82],[3450,560,1600,88],[3450,1450,1600,82],[3450,2420,1600,82],[3450,3200,1600,82],[5450,560,1550,88],[5450,1660,1550,82],[5450,2780,1550,82],[5450,3920,1550,82]];
-      ctx.save();
-      lanes.forEach(([x,y,w,h])=>{
-        ctx.fillStyle='rgba(51,65,85,.12)';ctx.beginPath();ctx.roundRect(x+4,y+7,w,h,14);ctx.fill();
-        ctx.strokeStyle='rgba(255,255,255,.72)';ctx.lineWidth=2;ctx.setLineDash([18,18]);
-        ctx.beginPath();
-        if(w>h){ctx.moveTo(x+18,y+h/2);ctx.lineTo(x+w-18,y+h/2);}
-        else{ctx.moveTo(x+w/2,y+14);ctx.lineTo(x+w/2,y+h-14);}
-        ctx.stroke();
-      });
-      ctx.setLineDash([]);
-      // Crosswalk stripes at major junctions.
-      [[835,565,95,90],[2048,1345,90,110],[3490,1415,100,95],[5610,1620,90,95],[5610,2740,90,95]].forEach(([x,y,w,h])=>{
-        ctx.fillStyle='rgba(255,255,255,.68)';
-        for(let n=0;n<6;n++){
-          if(w<h)ctx.fillRect(x+n*15,y,8,h);
-          else ctx.fillRect(x,y+n*15,w,8);
-        }
-      });
-      ctx.restore();
-
-      // Ground pathways around public facilities.
-      ctx.save();
-      [[500,770,220,24],[1190,760,210,22],[1650,940,180,22],[2380,870,240,22],[3650,3000,700,22],[5800,3460,300,22]].forEach(([x,y,w,h])=>{
-        ctx.fillStyle='#d9cfb7';ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();
-        ctx.strokeStyle='rgba(120,98,69,.22)';ctx.lineWidth=2;ctx.stroke();
-      });
-      ctx.restore();
-
-      // Central Village Plaza / Taman Maslahat
-      ctx.fillStyle = '#fef3c7';
-      ctx.beginPath();
-      ctx.arc(888, 608, 92, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 4;
-      ctx.stroke();
-
-      // Plaza inner emerald emblem
-      ctx.fillStyle = '#0f766e';
-      ctx.beginPath();
-      ctx.arc(888, 608, 34, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '800 10px "Plus Jakarta Sans", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('ALUN-ALUN', 888, 605);
-      ctx.fillText('MASLAHAT', 888, 618);
-
-      // River / Stream in South-East corner (flood indicator when flood crisis active)
-      const floodActive = !state.worldFlags.floodResolved && getQuestById('q_flood')?.status === 'available';
-      ctx.fillStyle = floodActive ? '#0284c7' : '#38bdf8';
-      ctx.beginPath();
-      ctx.moveTo(60, 1490);
-      ctx.quadraticCurveTo(750, 1440, 1450, 1510);
-      ctx.quadraticCurveTo(1850, 1550, 2140, 1470);
-      ctx.lineTo(2140, 1650);
-      ctx.lineTo(60, 1650);
-      ctx.closePath();
-      ctx.fill();
-
-      // Water Well in Residential area
-      ctx.save();
-      ctx.fillStyle = '#64748b';
-      ctx.beginPath();
-      ctx.arc(waterWell.x, waterWell.y, waterWell.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = state.worldFlags.waterRestored ? '#0ea5e9' : '#78350f';
-      ctx.beginPath();
-      ctx.arc(waterWell.x, waterWell.y, waterWell.radius - 7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.font = '700 10px "Plus Jakarta Sans", sans-serif';
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.fillText(state.worldFlags.waterRestored ? 'AIR BERSIH' : 'SUMUR KERING', waterWell.x, waterWell.y + 42);
-      ctx.restore();
-
-      // VISUAL PASS 2: layered streetscape, water highlights and small world props.
-      // Painted road markings make the large districts read as connected places.
-      ctx.save();
-      ctx.setLineDash([24,22]); ctx.lineWidth=4; ctx.strokeStyle='rgba(255,255,255,.62)';
-      [[300,607,1780,607],[2058,1420,3488,1420],[2058,2220,3488,2220],[3460,1490,5030,1490],[3460,2460,5030,2460],[3460,3240,5030,3240]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
-      ctx.setLineDash([]); ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.42)';
-      [[887,440,887,550],[2095,500,2095,1370],[3544,500,3544,1400],[3544,1510,3544,2400]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
-      ctx.restore();
-
-      // Garden islands: clipped rounded beds with soil, shrubs and flowers.
-      const beds=[[520,820,190,78],[1210,790,220,88],[2320,850,190,76],[2920,1740,230,82],[3800,1830,210,90],[4480,2710,180,74],[5200,1800,210,88],[5800,3500,250,90]];
-      beds.forEach(([x,y,w,h],bi)=>{
+      if (img && img.complete && img.naturalWidth) {
+        ctx.drawImage(img, left, top, width, height);
+      } else {
+        // Detailed vector fallback remains visible while external SVG assets load.
         ctx.save();
-        ctx.fillStyle='rgba(15,23,42,.12)';ctx.beginPath();ctx.roundRect(x+5,y+7,w,h,22);ctx.fill();
-        ctx.fillStyle='#a87950';ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.fill();
-        ctx.fillStyle='#4d9b57';ctx.beginPath();ctx.roundRect(x+7,y+7,w-14,h-14,18);ctx.fill();
-        for(let n=0;n<7;n++){
-          const px=x+20+((n*37+bi*19)%(w-40)),py=y+18+((n*23+bi*11)%(h-34));
-          ctx.fillStyle=n%2?'#fda4af':'#fde68a';ctx.beginPath();ctx.arc(px,py,3.2,0,Math.PI*2);ctx.fill();
-          ctx.fillStyle='#166534';ctx.beginPath();ctx.arc(px+5,py+4,4,0,Math.PI*2);ctx.fill();
-        }
+        ctx.fillStyle = 'rgba(20,35,28,.22)';
+        ctx.beginPath(); ctx.ellipse(p.x+5,p.y-4,width*.48,12,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = b.wallColor || '#f3ead7';
+        ctx.beginPath(); ctx.moveTo(left+18,top+68); ctx.lineTo(p.x+width*.38,top+42);
+        ctx.lineTo(p.x+width*.38,p.y-20); ctx.lineTo(left+18,p.y-2); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#c9b99a';
+        ctx.beginPath(); ctx.moveTo(p.x+width*.38,top+42); ctx.lineTo(left+width-12,top+65);
+        ctx.lineTo(left+width-12,p.y-14); ctx.lineTo(p.x+width*.38,p.y-20); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = b.roofColor || '#64748b';
+        ctx.beginPath(); ctx.moveTo(left+8,top+69); ctx.lineTo(p.x+width*.38,top+24);
+        ctx.lineTo(left+width-4,top+64); ctx.lineTo(p.x+width*.38,top+92); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#8b5e3c'; ctx.fillRect(p.x-12,p.y-49,24,44);
+        ctx.fillStyle = '#93c5d9'; ctx.fillRect(left+33,p.y-73,20,18);
+        ctx.fillRect(p.x+35,p.y-72,20,18);
+        if (type === 'clinic') { ctx.fillStyle='#fff'; ctx.fillRect(p.x-9,top+35,18,24); ctx.fillStyle='#dc3545'; ctx.fillRect(p.x-3,top+38,6,18); ctx.fillRect(p.x-7,top+44,14,6); }
+        if (type === 'mosque') { ctx.fillStyle='#e8c45b'; ctx.beginPath(); ctx.ellipse(p.x,top+30,25,22,0,Math.PI,0); ctx.fill(); }
         ctx.restore();
-      });
-
-      // Street furniture and warm lanterns, repeated along pedestrian routes.
-      [[690,690],[1100,690],[1790,700],[2700,1510],[3270,1510],[4200,1510],[4930,1510],[3700,2530],[4700,2530],[5450,3260]].forEach(([x,y])=>{
-        ctx.save();ctx.fillStyle='rgba(15,23,42,.18)';ctx.beginPath();ctx.ellipse(x+5,y+13,13,5,0,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#475569';ctx.fillRect(x-2,y-34,4,42);
-        ctx.fillStyle='#334155';ctx.beginPath();ctx.roundRect(x-10,y-39,20,9,4);ctx.fill();
-        const glow=ctx.createRadialGradient(x,y-34,1,x,y-34,19);glow.addColorStop(0,'rgba(253,230,138,.55)');glow.addColorStop(1,'rgba(253,230,138,0)');
-        ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,y-34,19,0,Math.PI*2);ctx.fill();ctx.restore();
-      });
-
-      // Water surface glints and banks on the river and retention pond.
-      ctx.save();ctx.strokeStyle='rgba(224,242,254,.62)';ctx.lineWidth=4;ctx.lineCap='round';
-      for(let n=0;n<18;n++){
-        const x=140+n*105,y=1515+Math.sin(n*.72)*22;
-        ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+18,y-5,x+38,y+1);ctx.stroke();
       }
-      ctx.strokeStyle='rgba(255,255,255,.48)';ctx.lineWidth=3;
-      for(let n=0;n<7;n++){ctx.beginPath();ctx.ellipse(4000-95+n*28,2810+n*5,20,5,-.15,0,Math.PI*2);ctx.stroke();}
+
+      // Compact location label, preserving the recognizable building names.
+      ctx.save();
+      ctx.font = '700 9px "Plus Jakarta Sans", sans-serif';
+      const title = b.name || 'Fasilitas';
+      const shortTitle = title.length > 24 ? title.slice(0,22) + '…' : title;
+      const tw = ctx.measureText(shortTitle).width;
+      ctx.fillStyle = 'rgba(19,47,39,.82)';
+      ctx.beginPath(); ctx.roundRect(p.x-tw/2-6, top-11, tw+12, 15, 5); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(shortTitle,p.x,top);
+      ctx.restore();
+    }
+
+    function drawTree(ctx, t) {
+      const p = worldToScreen(t.x,t.y);
+      const r = t.r || 34;
+      const size = Math.max(86, r*2.5);
+      const img = visualAssets.tree;
+      if (img && img.complete && img.naturalWidth) {
+        ctx.drawImage(img,p.x-size/2,p.y-size*1.12,size,size*1.12);
+      } else {
+        ctx.save();
+        ctx.fillStyle='rgba(20,35,28,.2)'; ctx.beginPath(); ctx.ellipse(p.x+4,p.y-2,size*.34,9,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#80552e'; ctx.fillRect(p.x-5,p.y-48,10,49);
+        const colors=['#2f7c4a','#3f9655','#5eaa63','#79bd70'];
+        for(let i=0;i<4;i++){ctx.fillStyle=colors[i];ctx.beginPath();ctx.arc(p.x+(i%2?13:-12),p.y-62-(i%3)*12,size*(.22-i*.018),0,Math.PI*2);ctx.fill();}
+        ctx.restore();
+      }
+    }
+
+    function drawWorldEnvironment(ctx, camX, camY) {
+      ctx.save();
+      ctx.translate(-camX,-camY);
+      const pts = projectedCorners;
+      const base = ctx.createLinearGradient(projectedBounds.minX,projectedBounds.minY,projectedBounds.maxX,projectedBounds.maxY);
+      base.addColorStop(0,'#a8c98a'); base.addColorStop(.48,'#83b878'); base.addColorStop(1,'#5d9b65');
+      ctx.fillStyle = base;
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+      pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.fill();
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+      pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.clip();
+
+      // Hand-painted meadow texture, generated only inside the current viewport.
+      const sx0 = Math.floor((camX-70)/42)*42;
+      const sy0 = Math.floor((camY-70)/30)*30;
+      for(let sy=sy0; sy<camY+viewHeight+80; sy+=30) {
+        for(let sx=sx0; sx<camX+viewWidth+80; sx+=42) {
+          const seed = Math.abs(Math.sin(sx*12.9898+sy*78.233)*43758.5453)%1;
+          ctx.fillStyle = seed>.5 ? 'rgba(220,239,184,.12)' : 'rgba(39,91,54,.075)';
+          ctx.beginPath(); ctx.ellipse(sx+seed*22,sy+(1-seed)*13,8+seed*10,3+seed*4,seed,0,Math.PI*2); ctx.fill();
+          if(seed>.72) {
+            ctx.strokeStyle='rgba(238,248,218,.34)'; ctx.lineWidth=1.2;
+            ctx.beginPath(); ctx.moveTo(sx,sy+4); ctx.lineTo(sx-2,sy-3);
+            ctx.moveTo(sx+4,sy+4); ctx.lineTo(sx+7,sy-2); ctx.stroke();
+          }
+          if(seed>.94) {
+            ctx.fillStyle='#f4dc8a'; ctx.beginPath(); ctx.arc(sx+9,sy-3,1.7,0,Math.PI*2); ctx.fill();
+          }
+        }
+      }
+
+      // A few organic meadow patches soften the tiled look.
+      for(let i=0;i<34;i++) {
+        const x = projectedBounds.minX + ((i*379)% (projectedBounds.maxX-projectedBounds.minX));
+        const y = projectedBounds.minY + ((i*251)% (projectedBounds.maxY-projectedBounds.minY));
+        ctx.fillStyle = i%2 ? 'rgba(203,225,151,.12)' : 'rgba(47,107,61,.08)';
+        ctx.beginPath(); ctx.ellipse(x,y,42+(i%5)*11,17+(i%4)*6,(i%7)*.2,0,Math.PI*2); ctx.fill();
+      }
       ctx.restore();
 
-      // Stone paths and small stepping-stones connect the park facilities.
-      ctx.save();ctx.fillStyle='#c8bda6';
-      for(let n=0;n<9;n++){ctx.beginPath();ctx.ellipse(4230+n*24,2820+Math.sin(n*.5)*13,9,5,.15,0,Math.PI*2);ctx.fill();}
+      // Community lake and water well are drawn as separate scenic landmarks.
+      const lake = worldToScreen(6350,4450);
+      ctx.fillStyle='rgba(26,89,107,.22)'; ctx.beginPath(); ctx.ellipse(lake.x+7,lake.y+8,170,62,-.1,0,Math.PI*2); ctx.fill();
+      const water = ctx.createLinearGradient(lake.x-120,lake.y-50,lake.x+120,lake.y+55);
+      water.addColorStop(0,'#9ed9d0'); water.addColorStop(.5,'#4da7ae'); water.addColorStop(1,'#287c91');
+      ctx.fillStyle=water; ctx.beginPath(); ctx.ellipse(lake.x,lake.y,166,57,-.1,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(236,255,246,.48)'; ctx.lineWidth=2;
+      for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(lake.x-35+i*18,lake.y-5+i*8,28+i*7,4+i, -.1,0,Math.PI*2);ctx.stroke();}
+
+      const well = worldToScreen(waterWell.x,waterWell.y);
+      ctx.fillStyle='rgba(25,44,34,.22)'; ctx.beginPath(); ctx.ellipse(well.x+3,well.y+5,24,9,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#b98b58'; ctx.beginPath(); ctx.ellipse(well.x,well.y,22,10,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#6c4b32'; ctx.beginPath(); ctx.ellipse(well.x,well.y-2,16,7,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=state.worldFlags.waterRestored?'#49b8d0':'#3b3329';
+      ctx.beginPath(); ctx.ellipse(well.x,well.y-3,12,4.5,0,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font='700 9px "Plus Jakarta Sans",sans-serif'; ctx.textAlign='center';
+      ctx.fillText(state.worldFlags.waterRestored?'AIR BERSIH':'SUMUR KERING',well.x,well.y+25);
+
+      // Soft map boundary keeps the playable region legible.
+      ctx.strokeStyle='rgba(42,84,54,.35)'; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); pts.slice(1).forEach(p=>ctx.lineTo(p.x,p.y)); ctx.closePath(); ctx.stroke();
       ctx.restore();
-
-      // Disaster scenes change the visible landscape while events remain active.
-      (state.activeDisasters || []).forEach(d => drawDisasterScene(ctx,d));
-
-      // Perimeter wooden fence
-      ctx.strokeStyle = '#92400e';
-      ctx.lineWidth = 6;
-      ctx.strokeRect(55, 75, WORLD_WIDTH - 110, WORLD_HEIGHT - 135);
     }
 
     function drawDisasterScene(ctx,d) {
@@ -3019,25 +2765,23 @@ Game simulasi manajemen lembaga sosial & filantropi berbasis web (2D Top-Down RP
         return;
       }
 
+      // Screen-relative movement mapped back into the isometric world axes.
       let vx = 0;
       let vy = 0;
-      if (keys.up) vy -= 1;
-      if (keys.down) vy += 1;
-      if (keys.left) vx -= 1;
-      if (keys.right) vx += 1;
+      if (keys.up)    { vx -= 1; vy -= 1; }
+      if (keys.down)  { vx += 1; vy += 1; }
+      if (keys.left)  { vx -= 1; vy += 1; }
+      if (keys.right) { vx += 1; vy -= 1; }
 
       if (vx !== 0 || vy !== 0) {
-        // Normalize diagonal speed
         const len = Math.hypot(vx, vy);
         vx /= len;
         vy /= len;
 
-        // Update facing direction
-        if (Math.abs(vx) > Math.abs(vy)) {
-          state.player.dir = vx < 0 ? 'left' : 'right';
-        } else {
-          state.player.dir = vy < 0 ? 'up' : 'down';
-        }
+        if (keys.up) state.player.dir = 'up';
+        else if (keys.down) state.player.dir = 'down';
+        else if (keys.left) state.player.dir = 'left';
+        else if (keys.right) state.player.dir = 'right';
 
         const stepX = vx * state.player.speed * dt;
         const stepY = vy * state.player.speed * dt;
@@ -3148,131 +2892,95 @@ function drawWorldAtmosphere(ctx, camX, camY, dt) {
     }
 
     function render(dt = 1 / 60) {
-      // Clear in physical pixels, then draw in CSS pixels for crisp high-DPI rendering.
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.setTransform(renderScale,0,0,renderScale,0,0);
       ctx.imageSmoothingEnabled = true;
 
-      // Ease the camera toward the player instead of snapping every frame.
-      let targetX = Math.max(0, Math.min(WORLD_WIDTH - viewWidth, state.player.x - viewWidth / 2));
-      let targetY = Math.max(0, Math.min(WORLD_HEIGHT - viewHeight, state.player.y - viewHeight / 2));
-      if (!cameraReady) {
-        cameraX = targetX;
-        cameraY = targetY;
-        cameraReady = true;
-      }
-      const cameraEase = 1 - Math.exp(-9 * Math.min(dt, 0.05));
-      cameraX += (targetX - cameraX) * cameraEase;
-      cameraY += (targetY - cameraY) * cameraEase;
-      const camX = cameraX;
-      const camY = cameraY;
+      const playerPoint = worldToScreen(state.player.x,state.player.y);
+      const minCamX = projectedBounds.minX;
+      const maxCamX = Math.max(minCamX,projectedBounds.maxX-viewWidth);
+      const minCamY = projectedBounds.minY;
+      const maxCamY = Math.max(minCamY,projectedBounds.maxY-viewHeight);
+      const targetX = Math.max(minCamX,Math.min(maxCamX,playerPoint.x-viewWidth/2));
+      const targetY = Math.max(minCamY,Math.min(maxCamY,playerPoint.y-viewHeight/2));
+      if(!cameraReady){cameraX=targetX;cameraY=targetY;cameraReady=true;}
+      const cameraEase = 1-Math.exp(-8*Math.min(dt,.05));
+      cameraX += (targetX-cameraX)*cameraEase;
+      cameraY += (targetY-cameraY)*cameraEase;
+      const camX=cameraX, camY=cameraY;
 
+      // 1. Terrain is drawn in projected screen coordinates and clipped to the diamond map.
+      drawWorldEnvironment(ctx,camX,camY);
+
+      // 2. Roads, pedestrian routes and parks retain their original world data,
+      //    but are projected through the same three-quarter camera matrix.
       ctx.save();
-      ctx.translate(-camX, -camY);
-
-      // 1. Ground, Roads & Plaza
-      drawWorldEnvironment(ctx);
+      ctx.setTransform(renderScale*ISO_X,renderScale*ISO_Y,-renderScale*ISO_X,renderScale*ISO_Y,-camX*renderScale,-camY*renderScale);
       drawScenicWorldPass(ctx);
+      (state.activeDisasters || []).forEach(d=>drawDisasterScene(ctx,d));
+      ctx.restore();
 
-      // 2. Depth-sorted entities (Buildings, Trees, NPCs, Player)
-      const renderList = [];
-
-      buildings.forEach(b => {
-        renderList.push({
-          sortY: b.y + b.h,
-          draw: () => drawBuilding(ctx, b)
-        });
-      });
-
-      trees.forEach(t => {
-        renderList.push({
-          sortY: t.y + 18,
-          draw: () => drawTree(ctx, t)
-        });
-      });
-
-      npcs.forEach(npc => {
-        renderList.push({
-          sortY: npc.y + 20,
-          draw: () => {
-            drawHumanCharacter(ctx, npc.x, npc.y, {
-              gender: npc.gender,
-              dir: npc.dir,
-              shirtColor: npc.shirtColor,
-              hijabColor: npc.hijabColor,
-              label: npc.name
-            });
-
-            // Quest Indicator Icon above NPC
-            let q = npc.secondaryQuestId ? getQuestById(npc.secondaryQuestId) : null;
-            if (!q || q.status === 'locked' || q.status === 'completed') {
-              q = npc.questId ? getQuestById(npc.questId) : null;
-            }
-            if (q && q.status === 'available') {
-              ctx.save();
-              ctx.fillStyle = q.isCrisis ? '#dc2626' : '#f59e0b';
-              ctx.beginPath();
-              ctx.arc(npc.x, npc.y - 56, 10, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.fillStyle = '#ffffff';
-              ctx.font = '800 13px "Plus Jakarta Sans", sans-serif';
-              ctx.textAlign = 'center';
-              ctx.fillText('!', npc.x, npc.y - 51);
-              ctx.restore();
-            } else if (npc.isZiswafHub) {
-              ctx.save();
-              ctx.fillStyle = '#059669';
-              ctx.beginPath();
-              ctx.arc(npc.x, npc.y - 56, 10, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.fillStyle = '#fef08a';
-              ctx.font = '800 11px "Plus Jakarta Sans", sans-serif';
-              ctx.textAlign = 'center';
-              ctx.fillText('Rp', npc.x, npc.y - 52);
-              ctx.restore();
-            }
+      // 3. Buildings, trees and people use screen-facing painted assets.
+      ctx.save();
+      ctx.setTransform(renderScale,0,0,renderScale,-camX*renderScale,-camY*renderScale);
+      const renderList=[];
+      buildings.forEach(b=>renderList.push({
+        sortY:b.x+b.y+b.h,
+        draw:()=>drawBuilding(ctx,b)
+      }));
+      trees.forEach(t=>renderList.push({
+        sortY:t.x+t.y,
+        draw:()=>drawTree(ctx,t)
+      }));
+      npcs.forEach(npc=>renderList.push({
+        sortY:npc.x+npc.y,
+        draw:()=>{
+          const p=worldToScreen(npc.x,npc.y);
+          drawHumanCharacter(ctx,p.x,p.y,{
+            gender:npc.gender,dir:npc.dir,shirtColor:npc.shirtColor,
+            hijabColor:npc.hijabColor,label:npc.name
+          });
+          let q=npc.secondaryQuestId?getQuestById(npc.secondaryQuestId):null;
+          if(!q||q.status==='locked'||q.status==='completed') q=npc.questId?getQuestById(npc.questId):null;
+          if((q&&q.status==='available')||npc.isZiswafHub){
+            ctx.save();
+            ctx.fillStyle=q&&q.isCrisis?'#dc2626':'#e6a23c';
+            ctx.beginPath();ctx.arc(p.x,p.y-99,9,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#fff';ctx.font='800 12px "Plus Jakarta Sans",sans-serif';ctx.textAlign='center';
+            ctx.fillText(q&&q.isCrisis?'!':(npc.isZiswafHub?'Rp':'!'),p.x,p.y-95);
+            ctx.restore();
           }
-        });
-      });
-
-      // Player Character
+        }
+      }));
       renderList.push({
-        sortY: state.player.y + 20,
-        draw: () => {
-          drawHumanCharacter(ctx, state.player.x, state.player.y, {
-            gender: state.gender,
-            dir: state.player.dir,
-            walkFrame: state.player.walkFrame,
-            isMoving: state.player.isMoving,
-            ...(state.avatar || {}),
-            shirtColor: state.avatar?.shirtColor || (state.gender === 'male' ? '#0f766e' : '#047857'),
-            hijabColor: state.avatar?.hairColor || '#fef3c7',
-            skinColor: state.avatar?.skinColor || '#f1c29b',
-            hairColor: state.avatar?.hairColor || '#1e1b18',
-            hairStyle: state.avatar?.hairStyle || 'neat',
-            outfit: state.avatar?.outfit || 'field',
-            pantsColor: state.avatar?.pantsColor || '#1e293b',
-            label: state.playerName || '',
-            isPlayer: true
+        sortY:state.player.x+state.player.y,
+        draw:()=>{
+          const p=worldToScreen(state.player.x,state.player.y);
+          drawHumanCharacter(ctx,p.x,p.y,{
+            gender:state.gender,dir:state.player.dir,walkFrame:state.player.walkFrame,
+            isMoving:state.player.isMoving,...(state.avatar||{}),
+            shirtColor:state.avatar?.shirtColor||(state.gender==='male'?'#0f766e':'#047857'),
+            hijabColor:state.avatar?.hairColor||'#fef3c7',
+            skinColor:state.avatar?.skinColor||'#f1c29b',
+            hairColor:state.avatar?.hairColor||'#1e1b18',
+            hairStyle:state.avatar?.hairStyle||'neat',
+            outfit:state.avatar?.outfit||'field',
+            pantsColor:state.avatar?.pantsColor||'#1e293b',
+            label:state.playerName||'',isPlayer:true
           });
         }
       });
+      renderList.sort((a,b)=>a.sortY-b.sortY);
+      renderList.forEach(item=>item.draw());
 
-      // Sort back-to-front by Y coordinate
-      renderList.sort((a, b) => a.sortY - b.sortY);
-      renderList.forEach(item => item.draw());
-
-      // Weather atmospheric tint overlay (for smoke/rain crises)
-      if (state.weather.includes('Kabut Asap')) {
-        ctx.fillStyle = 'rgba(180, 83, 9, 0.16)';
-        ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
-      } else if (state.weather.includes('Hujan')) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.15)';
-        ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+      // Atmospheric effects are screen-facing, so rain and haze stay vertical.
+      if(state.weather.includes('Kabut Asap')){
+        ctx.fillStyle='rgba(180,83,9,.13)';ctx.fillRect(camX,camY,viewWidth,viewHeight);
+      }else if(state.weather.includes('Hujan')){
+        ctx.fillStyle='rgba(15,23,42,.10)';ctx.fillRect(camX,camY,viewWidth,viewHeight);
       }
-
-      drawWorldAtmosphere(ctx, camX, camY, dt);
+      drawWorldAtmosphere(ctx,camX,camY,dt);
       ctx.restore();
     }
 
